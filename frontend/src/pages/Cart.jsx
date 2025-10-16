@@ -58,7 +58,7 @@ const Cart = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Shporta juaj është bosh</h2>
               <p className="text-gray-600 mb-6">Shtoni disa produkte për të filluar!</p>
               <Link
-                to="/"
+                to="/products"
                 className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
               >
                 Vazhdoni Blerjet
@@ -87,23 +87,31 @@ const Cart = () => {
                 <div key={item.id} className="p-6 border-b border-gray-200 last:border-b-0">
                   <div className="flex items-start gap-4">
                     {/* Product Image */}
-                    <Link to={`/products/${item.id}`} className="flex-shrink-0">
+                    <Link to={`/product/${item.id}`} className="flex-shrink-0">
                       <img
-                        src={item.image}
+                        src={item.image || 'https://via.placeholder.com/150?text=No+Image'}
                         alt={item.name}
                         className="w-24 h-24 object-cover rounded-lg hover:opacity-75 transition-opacity"
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/150?text=No+Image'
+                        }}
                       />
                     </Link>
 
                     {/* Product Details */}
                     <div className="flex-1 min-w-0">
-                      <Link to={`/products/${item.id}`} className="block">
+                      <Link to={`/product/${item.id}`} className="block">
                         <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors">
                           {item.name}
                         </h3>
                       </Link>
                       <p className="text-gray-600 text-sm mt-1 line-clamp-2">{item.description}</p>
-                      <p className="text-blue-600 font-bold text-lg mt-2">${item.price.toFixed(2)}</p>
+                      {item.category && (
+                        <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-600 text-xs font-semibold rounded uppercase">
+                          {item.category}
+                        </span>
+                      )}
+                      <p className="text-blue-600 font-bold text-lg mt-2">${Number(item.price).toFixed(2)}</p>
                     </div>
 
                     {/* Quantity Controls */}
@@ -129,14 +137,19 @@ const Cart = () => {
                         <button
                           onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                           className="px-3 py-1 text-gray-600 hover:bg-gray-100 transition-colors"
+                          disabled={item.stock && item.quantity >= item.stock}
                         >
                           +
                         </button>
                       </div>
 
                       <p className="text-gray-900 font-bold">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ${(Number(item.price) * item.quantity).toFixed(2)}
                       </p>
+                      
+                      {item.stock && item.quantity >= item.stock && (
+                        <span className="text-xs text-red-600">Sasia maksimale</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -234,7 +247,7 @@ const Cart = () => {
 
               {/* Continue Shopping */}
               <Link
-                to="/"
+                to="/products"
                 className="block w-full text-center bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-semibold"
               >
                 Vazhdoni Blerjet

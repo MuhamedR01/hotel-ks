@@ -1,24 +1,45 @@
 
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useCart } from '../context/CartContext'
 
 function Home() {
+  const { addToCart } = useCart()
   const [featuredProducts, setFeaturedProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     // Fetch featured products from backend
     fetch('http://localhost/hotel-ks/backend/get_products.php?limit=3')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch products')
+        }
+        return res.json()
+      })
       .then(data => {
+        console.log('Fetched products:', data)
         setFeaturedProducts(data)
         setLoading(false)
       })
       .catch(err => {
         console.error('Gabim në ngarkimin e produkteve:', err)
+        setError(err.message)
         setLoading(false)
       })
   }, [])
+
+  const handleAddToCart = (product, e) => {
+    e.preventDefault()
+    addToCart(product)
+    // Show toast notification
+    const toast = document.createElement('div')
+    toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50'
+    toast.textContent = `${product.name} u shtua në shportë!`
+    document.body.appendChild(toast)
+    setTimeout(() => toast.remove(), 3000)
+  }
 
   return (
     <div className="min-h-screen">
@@ -123,14 +144,40 @@ function Home() {
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <div className="text-red-600 mb-4">
+                <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-lg font-semibold">Gabim në ngarkimin e produkteve</p>
+                <p className="text-sm text-gray-600 mt-2">{error}</p>
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Provo Përsëri
+              </button>
+            </div>
+          ) : featuredProducts.length === 0 ? (
+            <div className="text-center py-12">
+              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707-.293l-2.414-2.414a1 1 0 01-.293-.707V11a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707v2.586z" />
+              </svg>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Nuk ka produkte të disponueshme</h3>
+              <p className="text-gray-600 mb-4">Të gjitha produktet janë të shkarkuara momentalisht.</p>
+              <Link
+                to="/products"
+                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              >
+                Shiko të Gjitha Produktet
+              </Link>
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredProducts.map((product) => (
-                <Link
-                  key={product.id}
-                  to={`/product/${product.id}`}
-                  className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-all transform hover:-translate-y-2"
-                >
+                <div key={product.id} className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-all transform hover:-translate-y-2">
                   <div className="relative h-64 overflow-hidden bg-gray-100">
                     <img
                       src={product.image}
@@ -147,12 +194,15 @@ function Home() {
                     </h3>
                     <div className="flex items-center justify-between">
                       <span className="text-2xl font-bold text-blue-600">{product.price}€</span>
-                      <span className="text-sm text-gray-500 group-hover:text-blue-600 transition-colors">
-                        Shiko Detajet →
-                      </span>
+                      <button 
+                        onClick={(e) => handleAddToCart(product, e)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
+                      >
+                        Shto në Shportë
+                      </button>
                     </div>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}
@@ -175,7 +225,7 @@ function Home() {
             Gati për të Përmirësuar Shtëpinë tënde?
           </h2>
           <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
-            Bëhu pjesë e mijëve të klientëve të удhëhequr që kanë transformuar shtëpitë e tyre me produktet tona
+            Bëhu pjesë e mijëve të klientëve të udhëhequr që kanë transformuar shtëpitë e tyre me produktet tona
           </p>
           <Link
             to="/signup"

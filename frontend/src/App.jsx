@@ -1,19 +1,18 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { useState } from 'react'
-import Home from './pages/Home'
-import Products from './pages/Products'
-import ProductDetail from './pages/ProductDetail'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
 import Cart from './pages/Cart'
-import About from './pages/About'
-import Contact from './pages/Contact'
-import Profile from './pages/Profile'
 import Navbar from './components/Navbar'
-import Footer from './components/Footer'
+import Products from './pages/Products'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import Contact from './pages/Contact'
+import Login from './pages/Login'
+import Profile from './pages/Profile'
 import { AuthProvider } from './context/AuthContext'
+import Home from './pages/Home'
+import Footer from './components/Footer'
 import { CartProvider } from './context/CartContext'
-import './App.css'
+import ProductDetail from './pages/ProductDetail'
+import Signup from './pages/Signup'
+import About from './pages/About'
+import Checkout from './pages/Checkout'
 
 function App() {
   return (
@@ -30,6 +29,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/profile" element={<Profile />} />

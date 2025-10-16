@@ -7,152 +7,36 @@ const Products = () => {
   const { addToCart } = useCart()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState('të gjitha')
   const [sortBy, setSortBy] = useState('default')
   const [searchQuery, setSearchQuery] = useState('')
-
-  const categories = ['të gjitha', 'shtretër', 'banjo', 'dhoma', 'aksesorë']
+  const [categories, setCategories] = useState(['të gjitha'])
 
   useEffect(() => {
-    // Mock products data - replace with API call later
-    setTimeout(() => {
-      const mockProducts = [
-        {
-          id: 1,
-          name: "Çarçafë Premium Pambuku",
-          description: "Çarçafë luksoze 100% pambuk egjiptian me 800 fije. Të disponueshme në madhësi Queen dhe King.",
-          price: 89.99,
-          category: "shtretër",
-          image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400",
-          rating: 4.8,
-          reviews: 124,
-          inStock: true
-        },
-        {
-          id: 2,
-          name: "Set Peshqirësh Cilësi Hoteli",
-          description: "Set peshqirësh me cilësi profesionale që përfshin peshqirë banje, peshqirë dore dhe peshqirë fytyre.",
-          price: 49.99,
-          category: "banjo",
-          image: "https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=400",
-          rating: 4.6,
-          reviews: 89,
-          inStock: true
-        },
-        {
-          id: 3,
-          name: "Jastëk Memory Foam",
-          description: "Jastëk ergonomik memory foam me teknologji xhel ftohës. Perfekt për një gjumë të qetë natën.",
-          price: 39.99,
-          category: "shtretër",
-          image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=400",
-          rating: 4.9,
-          reviews: 203,
-          inStock: true
-        },
-        {
-          id: 4,
-          name: "Peshqir Banjoje Luksoz",
-          description: "Peshqir banjoje i butë me material pambuku turk. Një madhësi për të gjithë.",
-          price: 69.99,
-          category: "banjo",
-          image: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?w=400",
-          rating: 4.7,
-          reviews: 156,
-          inStock: true
-        },
-        {
-          id: 5,
-          name: "Perde Errësimi",
-          description: "Perde të rënda për errësim të plotë dhe privatësi. Të disponueshme në ngjyra të shumta.",
-          price: 79.99,
-          category: "dhoma",
-          image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=400",
-          rating: 4.5,
-          reviews: 98,
-          inStock: true
-        },
-        {
-          id: 6,
-          name: "Pantofla Hoteli",
-          description: "Pantofla të rehatshme me nënshtresë anti-rrëshqitëse. Paketë me 10 palë.",
-          price: 24.99,
-          category: "aksesorë",
-          image: "https://images.unsplash.com/photo-1603487742131-4160ec999306?w=400",
-          rating: 4.4,
-          reviews: 67,
-          inStock: true
-        },
-        {
-          id: 7,
-          name: "Jorgan Komfort",
-          description: "Jorgan për të gjitha stinët me mbushje alternative. I larëshëm në makinë.",
-          price: 99.99,
-          category: "shtretër",
-          image: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=400",
-          rating: 4.8,
-          reviews: 145,
-          inStock: true
-        },
-        {
-          id: 8,
-          name: "Mbrojtës Dysheku",
-          description: "Mbrojtës dysheku i papërshkueshëm nga uji dhe i frymëzueshëm. Mbron nga derdhjat dhe alergjenet.",
-          price: 34.99,
-          category: "shtretër",
-          image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=400",
-          rating: 4.6,
-          reviews: 112,
-          inStock: true
-        },
-        {
-          id: 9,
-          name: "Set Peshqirësh Fytyre",
-          description: "Set 6 peshqirësh fytyre me pambuk premium. Të buta dhe thithëse.",
-          price: 19.99,
-          category: "banjo",
-          image: "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=400",
-          rating: 4.5,
-          reviews: 78,
-          inStock: true
-        },
-        {
-          id: 10,
-          name: "Mbulese Jastëku Mëndafshi",
-          description: "Mbulese jastëku prej mëndafshi për flokë dhe lëkurë më të shëndetshme.",
-          price: 29.99,
-          category: "shtretër",
-          image: "https://images.unsplash.com/photo-1631049035182-249067d7618e?w=400",
-          rating: 4.7,
-          reviews: 134,
-          inStock: true
-        },
-        {
-          id: 11,
-          name: "Organizues Banjoje",
-          description: "Organizues elegant për produkte banjoje. Material inoks.",
-          price: 44.99,
-          category: "aksesorë",
-          image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400",
-          rating: 4.6,
-          reviews: 91,
-          inStock: true
-        },
-        {
-          id: 12,
-          name: "Qilim Dhome Gjumi",
-          description: "Qilim i butë dhe i ngrohtë për dhomën e gjumit. Madhësi të ndryshme.",
-          price: 59.99,
-          category: "dhoma",
-          image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=400",
-          rating: 4.5,
-          reviews: 103,
-          inStock: true
+    // Fetch products from backend
+    fetch('http://localhost/hotel-ks/backend/get_products.php')
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch products')
         }
-      ]
-      setProducts(mockProducts)
-      setLoading(false)
-    }, 500)
+        return res.json()
+      })
+      .then(data => {
+        console.log('Fetched products:', data)
+        setProducts(data)
+        
+        // Extract unique categories from products
+        const uniqueCategories = ['të gjitha', ...new Set(data.map(p => p.category).filter(Boolean))]
+        setCategories(uniqueCategories)
+        
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error('Gabim në ngarkimin e produkteve:', err)
+        setError(err.message)
+        setLoading(false)
+      })
   }, [])
 
   const handleAddToCart = (product) => {
@@ -180,8 +64,6 @@ const Products = () => {
         return a.price - b.price
       case 'price-high':
         return b.price - a.price
-      case 'rating':
-        return b.rating - a.rating
       case 'name':
         return a.name.localeCompare(b.name)
       default:
@@ -195,6 +77,28 @@ const Products = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-xl text-gray-600">Duke ngarkuar produktet...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-lg font-semibold">Gabim në ngarkimin e produkteve</p>
+            <p className="text-sm text-gray-600 mt-2">{error}</p>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Provo Përsëri
+          </button>
         </div>
       </div>
     )
@@ -251,7 +155,6 @@ const Products = () => {
                 <option value="default">Të parazgjedhura</option>
                 <option value="price-low">Çmimi: nga i ulët në të lartë</option>
                 <option value="price-high">Çmimi: nga i lartë në të ulët</option>
-                <option value="rating">Ratingu më i lartë</option>
                 <option value="name">Emri A-Z</option>
               </select>
             </div>
@@ -276,20 +179,32 @@ const Products = () => {
               >
                 <div className="relative h-64 overflow-hidden bg-gray-100">
                   <img
-                    src={product.image}
+                    src={product.image || 'https://via.placeholder.com/400x300?text=No+Image'}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/400x300?text=No+Image'
+                    }}
                   />
-                  <div className="absolute top-3 right-3 bg-white px-2 py-1 rounded-full text-sm font-semibold text-gray-700 shadow-md">
-                    ⭐ {product.rating}
-                  </div>
+                  {product.stock < 10 && product.stock > 0 && (
+                    <div className="absolute top-3 left-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                      Vetëm {product.stock} copë
+                    </div>
+                  )}
+                  {product.stock === 0 && (
+                    <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                      Mbaruar
+                    </div>
+                  )}
                 </div>
                 <div className="p-5">
-                  <div className="mb-2">
-                    <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
-                      {product.category}
-                    </span>
-                  </div>
+                  {product.category && (
+                    <div className="mb-2">
+                      <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
+                        {product.category}
+                      </span>
+                    </div>
+                  )}
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
                     {product.name}
                   </h3>
@@ -297,19 +212,30 @@ const Products = () => {
                     {product.description}
                   </p>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-2xl font-bold text-blue-600">${product.price}</span>
-                    <span className="text-sm text-gray-500">
-                      {product.reviews} recensione
+                    <span className="text-2xl font-bold text-blue-600">
+                      ${Number(product.price).toFixed(2)}
                     </span>
+                    {product.stock > 0 && (
+                      <span className="text-sm text-green-600 font-medium">
+                        Në stok
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={(e) => {
                       e.preventDefault()
-                      handleAddToCart(product)
+                      if (product.stock > 0) {
+                        handleAddToCart(product)
+                      }
                     }}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors font-semibold"
+                    disabled={product.stock === 0}
+                    className={`w-full py-2 rounded-lg transition-colors font-semibold ${
+                      product.stock > 0
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
                   >
-                    Shto në Shportë
+                    {product.stock > 0 ? 'Shto në Shportë' : 'Mbaruar'}
                   </button>
                 </div>
               </Link>
