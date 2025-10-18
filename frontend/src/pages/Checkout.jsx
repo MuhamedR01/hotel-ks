@@ -43,7 +43,6 @@ function Checkout() {
           }
         } catch (error) {
           console.error('Error loading profile:', error)
-          // If profile fetch fails but user is logged in, use basic user data
           if (user) {
             setFormData(prev => ({
               ...prev,
@@ -71,10 +70,26 @@ function Checkout() {
     }
   }, [cart, navigate])
 
+  // Calculate shipping based on country
+  const calculateShipping = (country, subtotal) => {
+    const countryLower = country.toLowerCase()
+    
+    if (countryLower === 'kosovo') {
+      // Free shipping for Kosovo if subtotal > 50€, otherwise 2€
+      return subtotal > 50 ? 0 : 2.00
+    } else if (countryLower === 'albania' || countryLower === 'north macedonia') {
+      // 5€ for Albania and North Macedonia
+      return 5.00
+    }
+    
+    // Default shipping for other countries
+    return 5.00
+  }
+
   // Calculate totals
   const subtotal = cart?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0
-  const shipping = 5.00
-  const tax = subtotal * 0.08
+  const shipping = calculateShipping(formData.country, subtotal)
+  const tax = subtotal * 0.08 // 8% tax
   const total = subtotal + shipping + tax
 
   const handleInputChange = (e) => {
@@ -125,7 +140,6 @@ function Checkout() {
     return Object.keys(newErrors).length === 0
   }
 
-  // Update the handleSubmit function to show the actual error
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -145,6 +159,9 @@ function Checkout() {
         customer_address: formData.address,
         customer_city: formData.city,
         customer_country: formData.country,
+        subtotal: subtotal,
+        shipping_cost: shipping,
+        tax: tax,
         total_amount: total,
         payment_method: 'cash',
         notes: formData.notes || '',
@@ -184,13 +201,15 @@ function Checkout() {
             orderNumber: data.order_number,
             orderData: {
               ...formData,
+              subtotal: subtotal,
+              shipping: shipping,
+              tax: tax,
               total: total,
               items: cart
             }
           } 
         })
       } else {
-        // Show the actual error from backend
         setError(data.error || 'Ndodhi një gabim gjatë krijimit të porosisë')
         console.error('Backend error:', data.error)
       }

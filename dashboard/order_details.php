@@ -1,78 +1,63 @@
 <?php
 session_start();
-require_once 'config.php';
-require_once 'db.php';
+require_once __DIR__ . '/includes/auth_check.php';
+require_once __DIR__ . '/db.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
-    exit();
-}
+$order_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Get order ID
-$order_id = $_GET['id'] ?? 0;
-
-if (!$order_id) {
-    header("Location: orders.php");
-    exit();
-}
-
-// Get current page for sidebar
-$current_page = 'orders';
-
-// Get admin info
-$admin_id = $_SESSION['admin_id'];
-$admin_query = "SELECT name, email FROM users WHERE id = ?";
-$admin_stmt = $conn->prepare($admin_query);
-$admin_stmt->bind_param("i", $admin_id);
-$admin_stmt->execute();
-$admin_result = $admin_stmt->get_result();
-$admin = $admin_result->fetch_assoc();
-$admin_name = $admin['name'] ?? 'Admin';
-$admin_email = $admin['email'] ?? '';
-
-// Get order details with all fields
-$query = "SELECT o.* FROM orders o WHERE o.id = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param("i", $order_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$order = $result->fetch_assoc();
-
-if (!$order) {
-    header("Location: orders.php");
-    exit();
-}
-
-// Get order items with product details
-$query = "SELECT oi.*, p.name as product_name, p.image as product_image, p.price as product_price
-          FROM order_items oi 
-          LEFT JOIN products p ON oi.product_id = p.id 
-          WHERE oi.order_id = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param("i", $order_id);
-$stmt->execute();
-$items_result = $stmt->get_result();
-$order_items = [];
-while ($row = $items_result->fetch_assoc()) {
-    $order_items[] = $row;
+if ($order_id <= 0) {
+    header('Location: orders.php');
+    exit;
 }
 
 // Handle status update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $new_status = $_POST['status'];
-    $update_query = "UPDATE orders SET status = ? WHERE id = ?";
-    $update_stmt = $conn->prepare($update_query);
-    $update_stmt->bind_param("si", $new_status, $order_id);
+    $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
+    $stmt->bind_param("si", $new_status, $order_id);
     
-    if ($update_stmt->execute()) {
-        $_SESSION['success_message'] = "Statusi u përditësua me sukses!";
+    if ($stmt->execute()) {
+        $_SESSION['success_message'] = 'Statusi i porosisë u përditësua me sukses!';
         header("Location: order_details.php?id=" . $order_id);
-        exit();
+        exit;
     }
+    $stmt->close();
 }
 
-// Status labels
+// Fetch order details
+$stmt = $conn->prepare("
+    SELECT o.*, 
+           COALESCE(o.subtotal, 0) as subtotal,
+           COALESCE(o.tax, 0) as tax,
+           COALESCE(o.shipping_cost, 0) as shipping_cost,
+           COALESCE(o.total_amount, 0) as total_amount
+    FROM orders o 
+    WHERE o.id = ?
+");
+$stmt->bind_param("i", $order_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$order = $result->fetch_assoc();
+$stmt->close();
+
+if (!$order) {
+    header('Location: orders.php');
+    exit;
+}
+
+// Fetch order items with product details
+$stmt = $conn->prepare("
+    SELECT oi.*, p.image as product_image
+    FROM order_items oi
+    LEFT JOIN products p ON oi.product_id = p.id
+    WHERE oi.order_id = ?
+");
+$stmt->bind_param("i", $order_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$order_items = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+
 $status_labels = [
     'pending' => 'Në Pritje',
     'processing' => 'Në Proces',
@@ -81,33 +66,28 @@ $status_labels = [
     'completed' => 'I Përfunduar',
     'cancelled' => 'Anuluar'
 ];
+
+$page_title = 'Detajet e Porosisë';
+include __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="sq">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detajet e Porosisë #<?php echo htmlspecialchars($order['order_number']); ?> - <?php echo DASHBOARD_TITLE; ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .sidebar-link.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
         }
-        .sidebar-link:hover:not(.active) {
-            background-color: #f3f4f6;
+        body {
+            background: white !important;
         }
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-            body {
-                background: white !important;
-            }
+        .sidebar {
+            display: none !important;
         }
-    </style>
-</head>
+        main {
+            margin-left: 0 !important;
+        }
+    }
+</style>
+
 <body class="bg-gray-50 min-h-screen">
     <!-- Sidebar Overlay for Mobile -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden no-print"></div>
@@ -124,19 +104,23 @@ $status_labels = [
                     <button id="mobile-menu-button" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
+                    <a href="orders.php" class="text-gray-600 hover:text-gray-900 hidden sm:block">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
                     <div>
-                        <div class="flex items-center space-x-2">
-                            <a href="orders.php" class="text-gray-600 hover:text-gray-900">
-                                <i class="fas fa-arrow-left"></i>
-                            </a>
-                            <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Porosia #<?php echo htmlspecialchars($order['order_number']); ?></h1>
-                        </div>
-                        <p class="text-xs sm:text-sm text-gray-500 mt-1">Detajet e porosisë</p>
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Porosia #<?php echo htmlspecialchars($order['order_number']); ?></h1>
+                        <p class="text-xs sm:text-sm text-gray-500 mt-1 hidden sm:block">Detajet e porosisë</p>
                     </div>
                 </div>
-                <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                    <i class="fas fa-print mr-2"></i>Printo
-                </button>
+                <div class="flex items-center space-x-2">
+                    <a href="orders.php" class="sm:hidden text-gray-600 hover:text-gray-900 p-2">
+                        <i class="fas fa-arrow-left text-lg"></i>
+                    </a>
+                    <button onclick="window.print()" class="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                        <i class="fas fa-print mr-0 sm:mr-2"></i>
+                        <span class="hidden sm:inline">Printo</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -152,11 +136,11 @@ $status_labels = [
             <?php endif; ?>
 
             <!-- Order Summary -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                     <div>
                         <h2 class="text-lg font-semibold text-gray-800">Përmbledhje e Porosisë</h2>
-                        <p class="text-gray-600">Detajet e porosisë dhe statusi</p>
+                        <p class="text-sm text-gray-600">Detajet e porosisë dhe statusi</p>
                     </div>
                     <div class="mt-4 md:mt-0">
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
@@ -190,7 +174,7 @@ $status_labels = [
                 <!-- Status Update Form -->
                 <form method="POST" class="mb-6 no-print">
                     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                        <select name="status" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <select name="status" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
                             <option value="pending" <?php echo $order['status'] == 'pending' ? 'selected' : ''; ?>>Në Pritje</option>
                             <option value="processing" <?php echo $order['status'] == 'processing' ? 'selected' : ''; ?>>Në Proces</option>
                             <option value="shipped" <?php echo $order['status'] == 'shipped' ? 'selected' : ''; ?>>I Dërguar</option>
@@ -198,7 +182,7 @@ $status_labels = [
                             <option value="completed" <?php echo $order['status'] == 'completed' ? 'selected' : ''; ?>>I Përfunduar</option>
                             <option value="cancelled" <?php echo $order['status'] == 'cancelled' ? 'selected' : ''; ?>>Anuluar</option>
                         </select>
-                        <button type="submit" name="update_status" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <button type="submit" name="update_status" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
                             Përditëso Statusin
                         </button>
                     </div>
@@ -217,7 +201,7 @@ $status_labels = [
                             </p>
                             <p class="flex items-start">
                                 <span class="font-medium w-24">Email:</span> 
-                                <span class="text-gray-700"><?php echo htmlspecialchars($order['customer_email'] ?? 'N/A'); ?></span>
+                                <span class="text-gray-700 break-all"><?php echo htmlspecialchars($order['customer_email'] ?? 'N/A'); ?></span>
                             </p>
                             <p class="flex items-start">
                                 <span class="font-medium w-24">Telefoni:</span> 
@@ -229,7 +213,7 @@ $status_labels = [
                     <div>
                         <h3 class="font-medium text-gray-800 mb-3 flex items-center">
                             <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
-                            Adresa e Livrimut
+                            Adresa e Dërgimit
                         </h3>
                         <div class="space-y-2 text-sm">
                             <p class="flex items-start">
@@ -250,7 +234,7 @@ $status_labels = [
             </div>
 
             <!-- Order Items -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
                 <h3 class="font-medium text-gray-800 mb-4 flex items-center">
                     <i class="fas fa-box-open mr-2 text-blue-600"></i>
                     Artikujt e Porosisë
@@ -299,7 +283,7 @@ $status_labels = [
             </div>
 
             <!-- Order Totals -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
                 <h3 class="font-medium text-gray-800 mb-4 flex items-center">
                     <i class="fas fa-calculator mr-2 text-blue-600"></i>
                     Totali i Porosisë
@@ -327,23 +311,30 @@ $status_labels = [
     </main>
 
     <script>
-        // Mobile menu toggle
-        document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('hidden');
-        });
-        
-        // Close sidebar when clicking overlay
-        document.getElementById('sidebar-overlay').addEventListener('click', function() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            
-            sidebar.classList.add('-translate-x-full');
-            overlay.classList.add('hidden');
-        });
+        // Mobile menu toggle - Fixed
+        const menuButton = document.getElementById('mobile-menu-button');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const sidebar = document.getElementById('sidebar');
+
+        if (menuButton) {
+            menuButton.addEventListener('click', () => {
+                if (sidebar) {
+                    sidebar.classList.toggle('-translate-x-full');
+                }
+                if (sidebarOverlay) {
+                    sidebarOverlay.classList.toggle('hidden');
+                }
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                if (sidebar) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+                sidebarOverlay.classList.add('hidden');
+            });
+        }
     </script>
 </body>
 </html>

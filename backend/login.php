@@ -45,7 +45,7 @@ try {
     $password = $data['password'];
 
     // Get user with all fields
-    $stmt = $conn->prepare("SELECT id, password, name, email, phone, address, city, country FROM users WHERE email = ?");
+    $stmt = $conn->prepare("SELECT id, password, name, email, phone, address, city, country, unique_id FROM users WHERE email = ?");
     if (!$stmt) {
         throw new Exception('Database error');
     }
@@ -53,39 +53,39 @@ try {
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
     $stmt->close();
 
-    if (!$user) {
-        throw new Exception('Email ose fjalëkalimi është i gabuar');
+    if ($result->num_rows === 1) {
+        $user = $result->fetch_assoc();
+        
+        if (password_verify($password, $user['password'])) {
+            $_SESSION['user_logged'] = true;
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_unique_id'] = $user['unique_id'];
+            $_SESSION['user_name'] = $user['name'];
+            $_SESSION['user_email'] = $user['email'];
+            
+            ob_end_clean();
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Kyçja u krye me sukses!',
+                'user' => [
+                    'id' => $user['id'],
+                    'unique_id' => $user['unique_id'],
+                    'name' => $user['name'],
+                    'email' => $user['email'],
+                    'phone' => $user['phone'],
+                    'address' => $user['address'],
+                    'city' => $user['city'],
+                    'country' => $user['country']
+                ]
+            ]);
+            exit();
+        }
     }
 
-    if (!password_verify($password, $user['password'])) {
-        throw new Exception('Email ose fjalëkalimi është i gabuar');
-    }
-
-    // Set session
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['user_email'] = $user['email'];
-
-    $conn->close();
-
-    // Clear output buffer and send response
-    ob_end_clean();
-
-    echo json_encode([
-        'success' => true,
-        'message' => 'Kyçja u krye me sukses',
-        'user' => [
-            'id' => $user['id'],
-            'email' => $user['email'],
-            'name' => $user['name'] ?? '',
-            'phone' => $user['phone'] ?? '',
-            'address' => $user['address'] ?? '',
-            'city' => $user['city'] ?? '',
-            'country' => $user['country'] ?? ''
-        ]
-    ]);
+    throw new Exception('Email ose fjalëkalimi është i gabuar');
 
 } catch (Exception $e) {
     if (isset($conn)) {

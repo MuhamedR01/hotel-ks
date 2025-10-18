@@ -1,4 +1,5 @@
 <?php
+session_start();
 // Disable error display, log them instead
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
@@ -28,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    include 'db.php';
+    require_once 'db.php';
 
     // Get and parse input
     $rawInput = file_get_contents('php://input');
@@ -76,41 +77,46 @@ try {
     }
     $stmt->close();
 
+    // Generate unique 6-digit ID
+    do {
+        $unique_id = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $check_stmt = $conn->prepare("SELECT id FROM users WHERE unique_id = ?");
+        $check_stmt->bind_param("s", $unique_id);
+        $check_stmt->execute();
+        $check_result = $check_stmt->get_result();
+    } while ($check_result->num_rows > 0);
+    
     // Hash password
-    $hash = password_hash($password, PASSWORD_DEFAULT);
-
-    // Insert user
-    $stmt = $conn->prepare("INSERT INTO users (email, password, name, phone, address, city, country) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    if (!$stmt) {
-        throw new Exception('Database prepare error');
-    }
-
-    $stmt->bind_param("sssssss", $email, $hash, $name, $phone, $address, $city, $country);
-
-    if (!$stmt->execute()) {
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    
+    // Insert user with unique_id
+    $stmt = $conn->prepare("INSERT INTO users (unique_id, name, email, password, phone, address, city, country, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->bind_param("ssssssss", $unique_id, $name, $email, $hashed_password, $phone, $address, $city, $country);
+    
+    if ($stmt->execute()) {
+        $user_id = $conn->insert_id;
+        
+        // Fetch the complete user data including unique_id
+        $user_stmt = $conn->prepare("SELECT id, unique_id, name, email, phone, address, city, country FROM users WHERE id = ?");
+        $user_stmt->bind_param("i", $user_id);
+        $user_stmt->execute();
+        $user_result = $user_stmt->get_result();
+        $user_data = $user_result->fetch_assoc();
+        
+        // Clear any output and send response
+        ob_end_clean();
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Regjistrimi u krye me sukses!',
+            'user' => $user_data
+        ]);
+    } else {
         throw new Exception('Failed to create user');
     }
 
-    $userId = $stmt->insert_id;
     $stmt->close();
     $conn->close();
-
-    // Clear any output and send response
-    ob_end_clean();
-    
-    echo json_encode([
-        'success' => true,
-        'message' => 'Regjistrimi u krye me sukses',
-        'user' => [
-            'id' => $userId,
-            'email' => $email,
-            'name' => $name,
-            'phone' => $phone,
-            'address' => $address,
-            'city' => $city,
-            'country' => $country
-        ]
-    ]);
 
 } catch (Exception $e) {
     if (isset($conn)) {

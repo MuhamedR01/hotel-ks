@@ -7,116 +7,117 @@ header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Credentials: true");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
+    http_response_code(200);
+    exit();
 }
 
-ob_start();
+require_once 'db.php';
 
 try {
-    include 'db.php';
-    session_start();
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
 
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Invalid request method');
-    }
-
-    $rawInput = file_get_contents('php://input');
-    $data = json_decode($rawInput, true);
-
-    if (json_last_error() !== JSON_ERROR_NONE) {
+    if (!$data) {
         throw new Exception('Invalid JSON data');
     }
 
     // Validate required fields
-    $requiredFields = ['customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city', 'customer_country', 'total_amount', 'items'];
-    foreach ($requiredFields as $field) {
-        if (!isset($data[$field]) || (is_string($data[$field]) && trim($data[$field]) === '')) {
-            throw new Exception("Field '$field' is required");
+    $required = ['customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city', 'customer_country', 'items'];
+    foreach ($required as $field) {
+        if (empty($data[$field])) {
+            throw new Exception("Missing required field: $field");
         }
     }
 
-    if (!is_array($data['items']) || count($data['items']) === 0) {
+    if (empty($data['items']) || !is_array($data['items'])) {
         throw new Exception('Order must contain at least one item');
     }
+
+    // Generate unique order number
+    $order_number = 'ORD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
+
+    // Get values with defaults
+    $subtotal = isset($data['subtotal']) ? floatval($data['subtotal']) : 0;
+    $shipping_cost = isset($data['shipping_cost']) ? floatval($data['shipping_cost']) : 0;
+    $tax = isset($data['tax']) ? floatval($data['tax']) : 0;
+    $total_amount = isset($data['total_amount']) ? floatval($data['total_amount']) : 0;
 
     // Start transaction
     $conn->begin_transaction();
 
-    // Get user ID if logged in
-    $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
-
-    // Generate unique order number
-    $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
-
-    // Prepare order insert
+    // Insert order - using correct column names
     $stmt = $conn->prepare("
         INSERT INTO orders (
-            user_id, 
             order_number, 
             customer_name, 
             customer_email, 
-            customer_phone, 
-            customer_address, 
-            customer_city, 
-            customer_country, 
-            total_amount, 
-            payment_method, 
-            payment_status, 
-            notes, 
-            status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            customer_phone,
+            customer_address,
+            customer_city,
+            customer_country,
+            subtotal,
+            shipping_cost,
+            tax,
+            total_amount,
+            payment_method,
+            payment_status,
+            notes,
+            status,
+            created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, 'processing', NOW())
     ");
 
-    if (!$stmt) {
-        throw new Exception('Database prepare error: ' . $conn->error);
-    }
-
-    $paymentMethod = isset($data['payment_method']) ? $data['payment_method'] : 'cash';
-    $paymentStatus = 'pending';
-    $notes = isset($data['notes']) ? trim($data['notes']) : '';
-    $status = 'pending';
+    $payment_method = $data['payment_method'] ?? 'cash';
+    $notes = $data['notes'] ?? '';
 
     $stmt->bind_param(
-        "isssssssdssss",
-        $userId,
-        $orderNumber,
+        "sssssssdddsss",
+        $order_number,
         $data['customer_name'],
         $data['customer_email'],
         $data['customer_phone'],
         $data['customer_address'],
         $data['customer_city'],
         $data['customer_country'],
-        $data['total_amount'],
-        $paymentMethod,
-        $paymentStatus,
-        $notes,
-        $status
+        $subtotal,
+        $shipping_cost,
+        $tax,
+        $total_amount,
+        $payment_method,
+        $notes
     );
 
     if (!$stmt->execute()) {
         throw new Exception('Failed to create order: ' . $stmt->error);
     }
 
-    $orderId = $stmt->insert_id;
+    $order_id = $conn->insert_id;
     $stmt->close();
 
-    // Insert order items - adjusted to match actual table structure
-    $stmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity) VALUES (?, ?, ?)");
-    
-    if (!$stmt) {
-        throw new Exception('Database prepare error for order items: ' . $conn->error);
-    }
+    // Insert order items - using correct column names
+    $stmt = $conn->prepare("
+        INSERT INTO order_items (order_id, product_id, product_name, product_price, quantity, subtotal) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
 
     foreach ($data['items'] as $item) {
-        if (!isset($item['product_id']) || !isset($item['quantity'])) {
+        if (empty($item['product_id']) || empty($item['quantity']) || empty($item['price'])) {
             throw new Exception('Invalid item data');
         }
 
+        $product_name = $item['product_name'] ?? '';
+        $product_price = floatval($item['price']);
+        $quantity = intval($item['quantity']);
+        $item_subtotal = $product_price * $quantity;
+        
         $stmt->bind_param(
-            "iii",
-            $orderId,
+            "iisdid",
+            $order_id,
             $item['product_id'],
-            $item['quantity']
+            $product_name,
+            $product_price,
+            $quantity,
+            $item_subtotal
         );
 
         if (!$stmt->execute()) {
@@ -125,32 +126,28 @@ try {
     }
 
     $stmt->close();
-
-    // Commit transaction
     $conn->commit();
-    $conn->close();
-
-    ob_end_clean();
 
     echo json_encode([
         'success' => true,
         'message' => 'Order created successfully',
-        'order_number' => $orderNumber,
-        'order_id' => $orderId
+        'order_id' => $order_id,
+        'order_number' => $order_number
     ]);
 
 } catch (Exception $e) {
     if (isset($conn)) {
         $conn->rollback();
-        $conn->close();
     }
     
-    ob_end_clean();
     http_response_code(400);
-    
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
     ]);
+} finally {
+    if (isset($conn)) {
+        $conn->close();
+    }
 }
 ?>

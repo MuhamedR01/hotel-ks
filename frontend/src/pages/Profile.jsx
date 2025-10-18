@@ -1,13 +1,14 @@
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../context/AuthContext'
 import { api } from '../services/api'
-import { User, Mail, Phone, MapPin, Globe } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { User, Mail, Phone, MapPin, Globe, Hash } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 
 const Profile = () => {
   const { user, login } = useAuth()
   
   const [formData, setFormData] = useState({
+    unique_id: '',
     name: '',
     email: '',
     phone: '',
@@ -35,6 +36,7 @@ const Profile = () => {
       
       if (response.success && response.user) {
         setFormData({
+          unique_id: response.user.unique_id || '',
           name: response.user.name || '',
           email: response.user.email || '',
           phone: response.user.phone || '',
@@ -157,6 +159,12 @@ const Profile = () => {
               <div className="text-white">
                 <h1 className="text-3xl font-bold">{formData.name || 'Përdoruesi'}</h1>
                 <p className="text-blue-100 mt-1">{formData.email}</p>
+                {formData.unique_id && (
+                  <div className="mt-2 inline-flex items-center bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                    <Hash className="w-4 h-4 mr-1" />
+                    <span className="text-sm font-mono font-semibold">ID: {formData.unique_id}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -179,6 +187,33 @@ const Profile = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="px-8 py-6">
             <div className="space-y-6">
+              {/* Unique ID (Read-only) */}
+              <div>
+                <label htmlFor="unique_id" className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                  <Hash className="w-4 h-4 mr-2" />
+                  ID Unik
+                </label>
+                <div className="relative">
+                  <input
+                    id="unique_id"
+                    name="unique_id"
+                    type="text"
+                    value={formData.unique_id}
+                    disabled
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed font-mono text-lg font-semibold text-blue-600"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                      Vetëm për lexim
+                    </span>
+                  </div>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  <i className="fas fa-info-circle mr-1"></i>
+                  Ky është ID-ja juaj unike që nuk mund të ndryshohet
+                </p>
+              </div>
+
               {/* Name */}
               <div>
                 <label htmlFor="name" className="flex items-center text-sm font-medium text-gray-700 mb-2">
