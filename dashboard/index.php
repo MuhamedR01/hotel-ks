@@ -7,6 +7,7 @@ if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
 
 require_once '../backend/db.php';
 require_once 'config.php';
+require_once __DIR__ . '/includes/image_helper.php';
 
 $current_page = 'index';
 $page_title = 'Dashboard';
@@ -94,16 +95,29 @@ if ($table_check && $table_check->num_rows > 0) {
     }
 }
 
-// Top Products
+// Top Products - Update the query to get image_mime_type if it exists
 $top_products = [];
 $table_check = $conn->query("SHOW TABLES LIKE 'order_items'");
 if ($table_check && $table_check->num_rows > 0) {
-    $result = $conn->query("SELECT p.*, COALESCE(SUM(oi.quantity), 0) as total_sold 
-                           FROM products p 
-                           LEFT JOIN order_items oi ON p.id = oi.product_id 
-                           GROUP BY p.id 
-                           ORDER BY total_sold DESC 
-                           LIMIT 5");
+    // Check if image_mime_type column exists
+    $column_check = $conn->query("SHOW COLUMNS FROM products LIKE 'image_mime_type'");
+    $has_mime_type = $column_check && $column_check->num_rows > 0;
+    
+    if ($has_mime_type) {
+        $result = $conn->query("SELECT p.*, COALESCE(SUM(oi.quantity), 0) as total_sold 
+                               FROM products p 
+                               LEFT JOIN order_items oi ON p.id = oi.product_id 
+                               GROUP BY p.id 
+                               ORDER BY total_sold DESC 
+                               LIMIT 5");
+    } else {
+        $result = $conn->query("SELECT p.*, COALESCE(SUM(oi.quantity), 0) as total_sold 
+                               FROM products p 
+                               LEFT JOIN order_items oi ON p.id = oi.product_id 
+                               GROUP BY p.id 
+                               ORDER BY total_sold DESC 
+                               LIMIT 5");
+    }
 } else {
     // If no order_items table, just get recent products
     $result = $conn->query("SELECT *, 0 as total_sold FROM products ORDER BY created_at DESC LIMIT 5");
@@ -144,6 +158,10 @@ if ($result) {
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+        .product-image {
+            object-fit: cover;
+            background-color: #f3f4f6;
         }
     </style>
 </head>
@@ -347,9 +365,10 @@ if ($result) {
                                 <?php foreach($top_products as $product): ?>
                                     <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
                                         <div class="flex items-center space-x-3">
-                                            <img src="<?php echo htmlspecialchars($product['image']); ?>" 
+                                            <img src="<?php echo getImageSrc($product['image'], $product['image_mime_type'] ?? 'image/jpeg'); ?>" 
                                                  alt="<?php echo htmlspecialchars($product['name']); ?>"
-                                                 class="w-12 h-12 object-cover rounded-lg">
+                                                 class="w-12 h-12 product-image rounded-lg"
+                                                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E'">
                                             <div>
                                                 <p class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($product['name']); ?></p>
                                                 <p class="text-xs text-gray-500">Shpenzuar: <?php echo $product['total_sold']; ?> copë</p>
@@ -390,9 +409,10 @@ if ($result) {
                             while($product = $recent_products->fetch_assoc()):
                         ?>
                             <div class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                <img src="<?php echo htmlspecialchars($product['image']); ?>" 
+                                <img src="<?php echo getImageSrc($product['image'], $product['image_mime_type'] ?? 'image/jpeg'); ?>" 
                                      alt="<?php echo htmlspecialchars($product['name']); ?>"
-                                     class="w-full h-40 object-cover rounded-lg mb-3">
+                                     class="w-full h-40 product-image rounded-lg mb-3"
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23ddd%22 width=%22200%22 height=%22200%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E'">
                                 <h3 class="font-semibold text-gray-900 mb-1"><?php echo htmlspecialchars($product['name']); ?></h3>
                                 <p class="text-sm text-gray-600 mb-2 line-clamp-2"><?php echo htmlspecialchars(substr($product['description'], 0, 80)); ?>...</p>
                                 <div class="flex items-center justify-between">
@@ -429,20 +449,62 @@ if ($result) {
     </div>
 
     <script>
-        // Mobile menu toggle
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const sidebar = document.querySelector('.sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
+    // Mobile menu toggle - Fixed version
+    const menuButton = document.getElementById('mobile-menu-button');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const sidebar = document.getElementById('sidebar');
+    const closeSidebar = document.getElementById('close-sidebar');
 
-        mobileMenuButton.addEventListener('click', () => {
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('hidden');
-        });
+    function openSidebar() {
+        if (sidebar && sidebarOverlay) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+            // Prevent body scroll when sidebar is open
+            document.body.style.overflow = 'hidden';
+        }
+    }
 
-        overlay.addEventListener('click', () => {
+    function closeSidebarFunc() {
+        if (sidebar && sidebarOverlay) {
             sidebar.classList.add('-translate-x-full');
-            overlay.classList.add('hidden');
+            sidebarOverlay.classList.add('hidden');
+            // Restore body scroll
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Open sidebar when clicking menu button
+    if (menuButton) {
+        menuButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            openSidebar();
         });
+    }
+
+    // Close sidebar when clicking overlay
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            closeSidebarFunc();
+        });
+    }
+
+    // Close sidebar when clicking close button
+    if (closeSidebar) {
+        closeSidebar.addEventListener('click', function() {
+            closeSidebarFunc();
+        });
+    }
+
+    // Close sidebar when clicking on a link (optional, for better UX)
+    const sidebarLinks = sidebar?.querySelectorAll('a');
+    if (sidebarLinks) {
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                // Small delay to allow navigation
+                setTimeout(closeSidebarFunc, 100);
+            });
+        });
+    }
     </script>
 </body>
 </html>

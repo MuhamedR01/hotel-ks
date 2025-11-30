@@ -1,45 +1,53 @@
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 
-const Products = () => {
+function Products() {
   const { addToCart } = useCart()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [selectedCategory, setSelectedCategory] = useState('të gjitha')
-  const [sortBy, setSortBy] = useState('default')
   const [searchQuery, setSearchQuery] = useState('')
-  const [categories, setCategories] = useState(['të gjitha'])
+  const [sortBy, setSortBy] = useState('default')
 
   useEffect(() => {
-    // Fetch products from backend
-    fetch('http://localhost/hotel-ks/backend/get_products.php')
-      .then(res => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('http://localhost/hotel-ks/backend/get_products.php')
+        const data = await res.json()
+        
         if (!res.ok) {
-          throw new Error('Failed to fetch products')
+          console.error('Server error details:', data)
+          throw new Error(data.message || data.error || 'Failed to fetch products')
         }
-        return res.json()
-      })
-      .then(data => {
-        console.log('Fetched products:', data)
-        setProducts(data)
         
-        // Extract unique categories from products
-        const uniqueCategories = ['të gjitha', ...new Set(data.map(p => p.category).filter(Boolean))]
-        setCategories(uniqueCategories)
-        
-        setLoading(false)
-      })
-      .catch(err => {
+        // Handle both old format (array) and new format (object with success property)
+        const productsData = data.success ? data.products : data
+        setProducts(productsData)
+      } catch (err) {
         console.error('Gabim në ngarkimin e produkteve:', err)
         setError(err.message)
+      } finally {
         setLoading(false)
-      })
+      }
+    }
+
+    fetchProducts()
   }, [])
 
   const handleAddToCart = (product) => {
+    // Check if product has sizes
+    if (product.has_sizes && product.sizes && product.sizes.length > 0) {
+      // Show alert to select size on product detail page
+      const toast = document.createElement('div')
+      toast.className = 'fixed bottom-4 right-4 bg-yellow-600 text-white px-6 py-3 rounded-lg shadow-lg z-50'
+      toast.textContent = 'Ju lutem zgjidhni madhësinë në faqen e produktit'
+      document.body.appendChild(toast)
+      setTimeout(() => toast.remove(), 3000)
+      return
+    }
+
     addToCart(product)
     // Show toast notification
     const toast = document.createElement('div')
@@ -49,33 +57,29 @@ const Products = () => {
     setTimeout(() => toast.remove(), 3000)
   }
 
-  // Filter products
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === 'të gjitha' || product.category === selectedCategory
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+  const sortedProducts = useMemo(() => {
+    let filtered = products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
 
-  // Sort products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
       case 'price-low':
-        return a.price - b.price
+        return filtered.sort((a, b) => a.price - b.price)
       case 'price-high':
-        return b.price - a.price
+        return filtered.sort((a, b) => b.price - a.price)
       case 'name':
-        return a.name.localeCompare(b.name)
+        return filtered.sort((a, b) => a.name.localeCompare(b.name))
       default:
-        return 0
+        return filtered
     }
-  })
+  }, [products, searchQuery, sortBy])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
           <p className="text-xl text-gray-600">Duke ngarkuar produktet...</p>
         </div>
       </div>
@@ -115,7 +119,7 @@ const Products = () => {
 
         {/* Search and Filters */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Search */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Kërko</label>
@@ -126,22 +130,6 @@ const Products = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-            </div>
-
-            {/* Category Filter */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Kategoria</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent capitalize"
-              >
-                {categories.map(category => (
-                  <option key={category} value={category} className="capitalize">
-                    {category}
-                  </option>
-                ))}
-              </select>
             </div>
 
             {/* Sort */}
@@ -168,16 +156,16 @@ const Products = () => {
           </p>
         </div>
 
-        {/* Products Grid */}
+        {/* Products Grid - 2 columns on mobile, 4 on desktop */}
         {sortedProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {sortedProducts.map((product) => (
               <Link
                 key={product.id}
-                to={`/product/${product.id}`}
+                to={`/products/${product.id}`}
                 className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1"
               >
-                <div className="relative h-64 overflow-hidden bg-gray-100">
+                <div className="relative h-48 sm:h-64 overflow-hidden bg-gray-100">
                   <img
                     src={product.image || 'https://via.placeholder.com/400x300?text=No+Image'}
                     alt={product.name}
@@ -187,36 +175,29 @@ const Products = () => {
                     }}
                   />
                   {product.stock < 10 && product.stock > 0 && (
-                    <div className="absolute top-3 left-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                      Vetëm {product.stock} copë
+                    <div className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                      Vetëm {product.stock}
                     </div>
                   )}
                   {product.stock === 0 && (
-                    <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                    <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
                       Mbaruar
                     </div>
                   )}
                 </div>
-                <div className="p-5">
-                  {product.category && (
-                    <div className="mb-2">
-                      <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
-                        {product.category}
-                      </span>
-                    </div>
-                  )}
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                <div className="p-3 sm:p-5">
+                  <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
                     {product.name}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                  <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 hidden sm:block">
                     {product.description}
                   </p>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-2xl font-bold text-blue-600">
-                      ${Number(product.price).toFixed(2)}
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <span className="text-lg sm:text-2xl font-bold text-blue-600">
+                      €{Number(product.price).toFixed(2)}
                     </span>
                     {product.stock > 0 && (
-                      <span className="text-sm text-green-600 font-medium">
+                      <span className="text-xs sm:text-sm text-green-600 font-medium">
                         Në stok
                       </span>
                     )}
@@ -229,7 +210,7 @@ const Products = () => {
                       }
                     }}
                     disabled={product.stock === 0}
-                    className={`w-full py-2 rounded-lg transition-colors font-semibold ${
+                    className={`w-full py-2 rounded-lg transition-colors font-semibold text-sm ${
                       product.stock > 0
                         ? 'bg-blue-600 hover:bg-blue-700 text-white'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -257,10 +238,9 @@ const Products = () => {
               />
             </svg>
             <h3 className="text-2xl font-semibold text-gray-900 mb-2">Nuk u gjet asnjë produkt</h3>
-            <p className="text-gray-600 mb-6">Provo të rregullosh kërkimin ose kriteret e filtrimit</p>
+            <p className="text-gray-600 mb-6">Provo të rregullosh kërkimin</p>
             <button
               onClick={() => {
-                setSelectedCategory('të gjitha')
                 setSearchQuery('')
                 setSortBy('default')
               }}

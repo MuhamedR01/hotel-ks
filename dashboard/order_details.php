@@ -1,92 +1,80 @@
 <?php
 session_start();
-require_once __DIR__ . '/includes/auth_check.php';
-require_once __DIR__ . '/db.php';
+require_once '../backend/db.php';
 
+// Check if user is logged in
+if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
+    header('Location: login.php');
+    exit();
+}
+
+$current_page = 'order_details';
+
+// Get order ID
 $order_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($order_id <= 0) {
     header('Location: orders.php');
-    exit;
+    exit();
 }
 
 // Handle status update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $new_status = $_POST['status'];
-    $stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
-    $stmt->bind_param("si", $new_status, $order_id);
+    $allowed_statuses = ['pending', 'shipped', 'completed', 'cancelled'];
     
-    if ($stmt->execute()) {
-        $_SESSION['success_message'] = 'Statusi i porosisë u përditësua me sukses!';
-        header("Location: order_details.php?id=" . $order_id);
-        exit;
+    if (in_array($new_status, $allowed_statuses)) {
+        $update_stmt = $conn->prepare("UPDATE orders SET status = ? WHERE id = ?");
+        $update_stmt->bind_param("si", $new_status, $order_id);
+        
+        if ($update_stmt->execute()) {
+            $_SESSION['success_message'] = 'Statusi i porosisë u përditësua me sukses!';
+            header("Location: order_details.php?id=" . $order_id);
+            exit();
+        }
     }
-    $stmt->close();
 }
 
-// Fetch order details
+// Get order details
 $stmt = $conn->prepare("
-    SELECT o.*, 
-           COALESCE(o.subtotal, 0) as subtotal,
-           COALESCE(o.tax, 0) as tax,
-           COALESCE(o.shipping_cost, 0) as shipping_cost,
-           COALESCE(o.total_amount, 0) as total_amount
+    SELECT o.*, u.name as user_name, u.email as user_email 
     FROM orders o 
+    LEFT JOIN users u ON o.user_id = u.id 
     WHERE o.id = ?
 ");
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
 $result = $stmt->get_result();
-$order = $result->fetch_assoc();
-$stmt->close();
 
-if (!$order) {
+if ($result->num_rows === 0) {
     header('Location: orders.php');
-    exit;
+    exit();
 }
 
-// Fetch order items with product details
-$stmt = $conn->prepare("
-    SELECT oi.*, p.image as product_image
-    FROM order_items oi
-    LEFT JOIN products p ON oi.product_id = p.id
+$order = $result->fetch_assoc();
+
+// Get order items
+$items_stmt = $conn->prepare("
+    SELECT oi.*, p.name as product_name, p.image as product_image 
+    FROM order_items oi 
+    LEFT JOIN products p ON oi.product_id = p.id 
     WHERE oi.order_id = ?
 ");
-$stmt->bind_param("i", $order_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$order_items = $result->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
+$items_stmt->bind_param("i", $order_id);
+$items_stmt->execute();
+$items_result = $items_stmt->get_result();
+$order_items = $items_result->fetch_all(MYSQLI_ASSOC);
 
+// Status labels
 $status_labels = [
     'pending' => 'Në Pritje',
-    'processing' => 'Në Proces',
-    'shipped' => 'I Dërguar',
-    'delivered' => 'I Livruar',
-    'completed' => 'I Përfunduar',
-    'cancelled' => 'Anuluar'
+    'shipped' => 'Në Postë',
+    'completed' => 'E Kompletuar',
+    'cancelled' => 'E Anuluar'
 ];
 
-$page_title = 'Detajet e Porosisë';
-include __DIR__ . '/includes/header.php';
+require_once 'includes/header.php';
 ?>
-
-<style>
-    @media print {
-        .no-print {
-            display: none !important;
-        }
-        body {
-            background: white !important;
-        }
-        .sidebar {
-            display: none !important;
-        }
-        main {
-            margin-left: 0 !important;
-        }
-    }
-</style>
 
 <body class="bg-gray-50 min-h-screen">
     <!-- Sidebar Overlay for Mobile -->
@@ -147,9 +135,7 @@ include __DIR__ . '/includes/header.php';
                             <?php 
                             switch($order['status']) {
                                 case 'pending': echo 'bg-yellow-100 text-yellow-800'; break;
-                                case 'processing': echo 'bg-blue-100 text-blue-800'; break;
-                                case 'shipped': echo 'bg-purple-100 text-purple-800'; break;
-                                case 'delivered': 
+                                case 'shipped': echo 'bg-blue-100 text-blue-800'; break;
                                 case 'completed': echo 'bg-green-100 text-green-800'; break;
                                 case 'cancelled': echo 'bg-red-100 text-red-800'; break;
                                 default: echo 'bg-gray-100 text-gray-800';
@@ -158,9 +144,7 @@ include __DIR__ . '/includes/header.php';
                             <i class="fas fa-<?php 
                                 switch($order['status']) {
                                     case 'pending': echo 'clock'; break;
-                                    case 'processing': echo 'cog'; break;
                                     case 'shipped': echo 'truck'; break;
-                                    case 'delivered': 
                                     case 'completed': echo 'check-circle'; break;
                                     case 'cancelled': echo 'times-circle'; break;
                                     default: echo 'info-circle';
@@ -175,12 +159,10 @@ include __DIR__ . '/includes/header.php';
                 <form method="POST" class="mb-6 no-print">
                     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                         <select name="status" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                            <option value="pending" <?php echo $order['status'] == 'pending' ? 'selected' : ''; ?>>Në Pritje</option>
-                            <option value="processing" <?php echo $order['status'] == 'processing' ? 'selected' : ''; ?>>Në Proces</option>
-                            <option value="shipped" <?php echo $order['status'] == 'shipped' ? 'selected' : ''; ?>>I Dërguar</option>
-                            <option value="delivered" <?php echo $order['status'] == 'delivered' ? 'selected' : ''; ?>>I Livruar</option>
-                            <option value="completed" <?php echo $order['status'] == 'completed' ? 'selected' : ''; ?>>I Përfunduar</option>
-                            <option value="cancelled" <?php echo $order['status'] == 'cancelled' ? 'selected' : ''; ?>>Anuluar</option>
+                            <option value="pending" <?php echo $order['status'] == 'pending' ? 'selected' : ''; ?>>Duke u Procesuar</option>
+                            <option value="shipped" <?php echo $order['status'] == 'shipped' ? 'selected' : ''; ?>>Në Postë</option>
+                            <option value="completed" <?php echo $order['status'] == 'completed' ? 'selected' : ''; ?>>E Kompletuar</option>
+                            <option value="cancelled" <?php echo $order['status'] == 'cancelled' ? 'selected' : ''; ?>>E Anuluar</option>
                         </select>
                         <button type="submit" name="update_status" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
                             Përditëso Statusin
@@ -218,15 +200,15 @@ include __DIR__ . '/includes/header.php';
                         <div class="space-y-2 text-sm">
                             <p class="flex items-start">
                                 <span class="font-medium w-24">Adresa:</span> 
-                                <span class="text-gray-700"><?php echo htmlspecialchars($order['shipping_address'] ?? 'N/A'); ?></span>
+                                <span class="text-gray-700"><?php echo htmlspecialchars($order['customer_address'] ?? 'N/A'); ?></span>
                             </p>
                             <p class="flex items-start">
                                 <span class="font-medium w-24">Qyteti:</span> 
-                                <span class="text-gray-700"><?php echo htmlspecialchars($order['shipping_city'] ?? 'N/A'); ?></span>
+                                <span class="text-gray-700"><?php echo htmlspecialchars($order['customer_city'] ?? 'N/A'); ?></span>
                             </p>
                             <p class="flex items-start">
-                                <span class="font-medium w-24">Zip:</span> 
-                                <span class="text-gray-700"><?php echo htmlspecialchars($order['shipping_zip'] ?? 'N/A'); ?></span>
+                                <span class="font-medium w-24">Shteti:</span> 
+                                <span class="text-gray-700"><?php echo htmlspecialchars($order['customer_country'] ?? 'N/A'); ?></span>
                             </p>
                         </div>
                     </div>
@@ -294,11 +276,11 @@ include __DIR__ . '/includes/header.php';
                         <span class="font-medium"><?php echo number_format($order['subtotal'], 2, ',', '.'); ?>€</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">TVSH (20%):</span>
+                        <span class="text-gray-600">TVSH (18%):</span>
                         <span class="font-medium"><?php echo number_format($order['tax'], 2, ',', '.'); ?>€</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Shpenzimet e Livrimut:</span>
+                        <span class="text-gray-600">Shuma e Transportit:</span>
                         <span class="font-medium"><?php echo number_format($order['shipping_cost'], 2, ',', '.'); ?>€</span>
                     </div>
                     <div class="flex justify-between">

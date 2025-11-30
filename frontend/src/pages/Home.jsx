@@ -14,13 +14,17 @@ function Home() {
     fetch('http://localhost/hotel-ks/backend/get_products.php?limit=3')
       .then(res => {
         if (!res.ok) {
-          throw new Error('Failed to fetch products')
+          return res.json().then(data => {
+            throw new Error(data.message || data.error || 'Failed to fetch products')
+          })
         }
         return res.json()
       })
       .then(data => {
         console.log('Fetched products:', data)
-        setFeaturedProducts(data)
+        // Handle both old format (array) and new format (object with success property)
+        const productsData = data.success ? data.products : data
+        setFeaturedProducts(productsData)
         setLoading(false)
       })
       .catch(err => {

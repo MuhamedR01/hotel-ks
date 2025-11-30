@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
@@ -9,6 +9,7 @@ function Checkout() {
   const navigate = useNavigate()
   const { cart, clearCart } = useCart()
   const { user, isAuthenticated } = useAuth()
+  const isSubmitting = useRef(false)
   
   const [formData, setFormData] = useState({
     name: '',
@@ -61,12 +62,14 @@ function Checkout() {
     loadUserProfile()
   }, [isAuthenticated, user])
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty (but not during submission)
   useEffect(() => {
-    if (cart && cart.length === 0) {
-      setTimeout(() => {
+    if (cart && cart.length === 0 && !isSubmitting.current) {
+      const timer = setTimeout(() => {
         navigate('/products')
       }, 2000)
+      
+      return () => clearTimeout(timer)
     }
   }, [cart, navigate])
 
@@ -75,21 +78,18 @@ function Checkout() {
     const countryLower = country.toLowerCase()
     
     if (countryLower === 'kosovo') {
-      // Free shipping for Kosovo if subtotal > 50€, otherwise 2€
       return subtotal > 50 ? 0 : 2.00
     } else if (countryLower === 'albania' || countryLower === 'north macedonia') {
-      // 5€ for Albania and North Macedonia
       return 5.00
     }
     
-    // Default shipping for other countries
     return 5.00
   }
 
   // Calculate totals
   const subtotal = cart?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0
   const shipping = calculateShipping(formData.country, subtotal)
-  const tax = subtotal * 0.08 // 8% tax
+  const tax = subtotal * 0.08
   const total = subtotal + shipping + tax
 
   const handleInputChange = (e) => {
@@ -98,7 +98,6 @@ function Checkout() {
       ...prev,
       [name]: value
     }))
-    // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -150,6 +149,7 @@ function Checkout() {
 
     setLoading(true)
     setError('')
+    isSubmitting.current = true // Prevent redirect during submission
 
     try {
       const orderData = {
@@ -195,25 +195,39 @@ function Checkout() {
       console.log('Order response:', data)
 
       if (data.success) {
+        // Store cart items before clearing
+        const cartItems = [...cart]
+        
+        // Clear cart
         clearCart()
+        
+        // Navigate to success page with order data
         navigate('/order-success', { 
+          replace: true,
           state: { 
             orderNumber: data.order_number,
             orderData: {
-              ...formData,
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone,
+              address: formData.address,
+              city: formData.city,
+              country: formData.country,
               subtotal: subtotal,
               shipping: shipping,
               tax: tax,
               total: total,
-              items: cart
+              items: cartItems
             }
           } 
         })
       } else {
+        isSubmitting.current = false
         setError(data.error || 'Ndodhi një gabim gjatë krijimit të porosisë')
         console.error('Backend error:', data.error)
       }
     } catch (err) {
+      isSubmitting.current = false
       console.error('Order error:', err)
       setError(err.message || 'Ndodhi një gabim gjatë krijimit të porosisë. Ju lutem provoni përsëri.')
     } finally {
@@ -233,7 +247,7 @@ function Checkout() {
     )
   }
 
-  if (cart.length === 0) {
+  if (cart.length === 0 && !isSubmitting.current) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

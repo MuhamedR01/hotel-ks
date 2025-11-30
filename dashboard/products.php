@@ -1,84 +1,80 @@
 <?php
-session_start();
-require_once 'config.php';
-require_once 'db.php';
+require_once 'includes/auth_check.php';
+require_once '../backend/db.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
-// Get current page for sidebar
 $current_page = 'products';
 
-// Handle delete
+// Handle product deletion
 if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']);
-    $conn->query("DELETE FROM products WHERE id = $id");
-    header("Location: products.php?success=deleted");
-    exit();
+    $stmt = $conn->prepare("DELETE FROM products WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    
+    if ($stmt->execute()) {
+        header("Location: products.php?success=deleted");
+        exit();
+    }
 }
 
-// Get filters
-$search = $_GET['search'] ?? '';
-$category = $_GET['category'] ?? '';
+// Get search and filter parameters
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$per_page = 12;
+$offset = ($page - 1) * $per_page;
 
 // Build query
-$query = "SELECT * FROM products WHERE 1=1";
+$where_clauses = [];
 $params = [];
-$types = "";
+$types = '';
 
-if ($search) {
-    $query .= " AND (name LIKE ? OR description LIKE ?)";
+if (!empty($search)) {
+    $where_clauses[] = "(name LIKE ? OR description LIKE ?)";
     $search_param = "%$search%";
     $params[] = $search_param;
     $params[] = $search_param;
-    $types .= "ss";
+    $types .= 'ss';
 }
 
-if ($category) {
-    $query .= " AND category = ?";
-    $params[] = $category;
-    $types .= "s";
-}
+$where_sql = !empty($where_clauses) ? 'WHERE ' . implode(' AND ', $where_clauses) : '';
 
-$query .= " ORDER BY created_at DESC";
-
-// Execute query
+// Get total count
+$count_sql = "SELECT COUNT(*) as total FROM products $where_sql";
+$count_stmt = $conn->prepare($count_sql);
 if (!empty($params)) {
-    $stmt = $conn->prepare($query);
+    $count_stmt->bind_param($types, ...$params);
+}
+$count_stmt->execute();
+$total_products = $count_stmt->get_result()->fetch_assoc()['total'];
+$total_pages = ceil($total_products / $per_page);
+
+// Get products
+$sql = "SELECT * FROM products $where_sql ORDER BY created_at DESC LIMIT ? OFFSET ?";
+$params[] = $per_page;
+$params[] = $offset;
+$types .= 'ii';
+
+$stmt = $conn->prepare($sql);
+if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
-    $stmt->execute();
-    $result = $stmt->get_result();
-} else {
-    $result = $conn->query($query);
 }
-
-// Store products in array for reuse
-$products = [];
-while ($row = $result->fetch_assoc()) {
-    $products[] = $row;
-}
-
-// Get categories
-$categories = $conn->query("SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category != ''");
+$stmt->execute();
+$result = $stmt->get_result();
+$products = $result->fetch_all(MYSQLI_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="sq">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Produktet - <?php echo DASHBOARD_TITLE; ?></title>
+    <title>Produktet - Hotel KS Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .sidebar-link.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .sidebar-link:hover:not(.active) {
-            background-color: #f3f4f6;
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border-left: 4px solid #3b82f6;
         }
     </style>
 </head>
@@ -132,19 +128,7 @@ $categories = $conn->query("SELECT DISTINCT category FROM products WHERE categor
                                    placeholder="Kërko produkte..." 
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base">
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Kategoria</label>
-                            <select name="category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base">
-                                <option value="">Të gjitha</option>
-                                <?php while($cat = $categories->fetch_assoc()): ?>
-                                    <option value="<?php echo htmlspecialchars($cat['category']); ?>" 
-                                            <?php echo $category === $cat['category'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars(ucfirst($cat['category'])); ?>
-                                    </option>
-                                <?php endwhile; ?>
-                            </select>
-                        </div>
-                        <div class="flex items-end space-x-2 sm:col-span-2 lg:col-span-1">
+                        <div class="sm:col-span-2 lg:col-span-1 flex items-end space-x-2">
                             <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base">
                                 <i class="fas fa-search mr-2"></i>Kërko
                             </button>
@@ -164,7 +148,6 @@ $categories = $conn->query("SELECT DISTINCT category FROM products WHERE categor
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Produkti</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Kategoria</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Çmimi</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Stoku</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Statusi</th>
@@ -185,11 +168,6 @@ $categories = $conn->query("SELECT DISTINCT category FROM products WHERE categor
                                                     <div class="text-xs text-gray-500"><?php echo htmlspecialchars(substr($product['description'], 0, 50)); ?>...</div>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                                                <?php echo htmlspecialchars(ucfirst($product['category'])); ?>
-                                            </span>
                                         </td>
                                         <td class="px-6 py-4">
                                             <span class="text-sm font-semibold text-gray-900"><?php echo number_format($product['price'], 2); ?>€</span>
@@ -229,7 +207,7 @@ $categories = $conn->query("SELECT DISTINCT category FROM products WHERE categor
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                                         <i class="fas fa-box-open text-4xl mb-2"></i>
                                         <p>Nuk u gjetën produkte.</p>
                                     </td>
@@ -281,6 +259,34 @@ $categories = $conn->query("SELECT DISTINCT category FROM products WHERE categor
                     <?php endif; ?>
                 </div>
             </div>
+
+            <!-- Pagination -->
+            <?php if ($total_pages > 1): ?>
+                <div class="mt-6 flex justify-center">
+                    <nav class="inline-flex rounded-md shadow">
+                        <?php if ($page > 1): ?>
+                            <a href="?search=<?php echo urlencode($search); ?>&page=<?php echo $page - 1; ?>" 
+                               class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 border border-gray-300 rounded-l-md">
+                                Para
+                            </a>
+                        <?php endif; ?>
+                        
+                        <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
+                            <a href="?search=<?php echo urlencode($search); ?>&page=<?php echo $i; ?>" 
+                               class="px-4 py-2 text-sm font-medium <?php echo $i == $page ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-gray-700 border border-gray-300'; ?>">
+                                <?php echo $i; ?>
+                            </a>
+                        <?php endfor; ?>
+                        
+                        <?php if ($page < $total_pages): ?>
+                            <a href="?search=<?php echo urlencode($search); ?>&page=<?php echo $page + 1; ?>" 
+                               class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 border border-gray-300 rounded-r-md">
+                                Pas
+                            </a>
+                        <?php endif; ?>
+                    </nav>
+                </div>
+            <?php endif; ?>
         </div>
     </main>
 
