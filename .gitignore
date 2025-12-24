@@ -10,6 +10,7 @@ dashboard/config.php
 
 # Database files
 *.sql
+!database/schema.sql
 *.sql.gz
 *.dump
 *.db
