@@ -1,10 +1,64 @@
-# Ignore VS Code SFTP config with credentials
-.vscode/sftp.json
+# Sensitive configuration files
+backend/config.php
+dashboard/config.php
 
-# Node / build
-frontend/dist
-frontend/node_modules
-
-# Other
-*.log
+# Environment files
 .env
+.env.local
+.env.production
+*.env
+
+# Database files
+*.sql
+!database/schema.sql
+*.sql.gz
+*.dump
+*.db
+
+# Backup files
+*.bak
+*.backup
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+error_log
+php_errors.log
+
+# Dependencies
+node_modules/
+vendor/
+frontend/node_modules/
+
+# Build outputs
+frontend/dist/
+frontend/build/
+*.min.js
+*.min.css
+
+# Temporary files
+tmp/
+temp/
+cache/
+
+# Sensitive debug/test files
+dashboard/check_db.php
+dashboard/reset_admin.php
+backend/test_*.php
+*_test.php
