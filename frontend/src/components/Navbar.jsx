@@ -87,7 +87,7 @@ function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link
-              to="/products"
+              to="/"
               className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
             >
               Produktet
@@ -231,7 +231,7 @@ function Navbar() {
         <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
           <div className="px-4 py-3 space-y-3">
             <Link
-              to="/products"
+              to="/"
               onClick={closeMenu}
               className="block text-gray-700 hover:text-blue-600 transition-colors font-medium py-2"
             >
@@ -265,55 +265,49 @@ function Navbar() {
               </div>
             </Link>
 
-            <div className="border-t border-gray-200 pt-3 mt-3">
+            <div className="border-t border-gray-200 pt-3">
               {user ? (
-                <>
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-full flex items-center justify-center font-semibold">
-                      {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{user.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                    </div>
-                  </div>
+                <div className="space-y-3">
                   <Link
                     to="/profile"
                     onClick={closeMenu}
-                    className="block text-gray-700 hover:text-blue-600 transition-colors font-medium py-2"
+                    className="flex items-center space-x-3 text-gray-700 hover:text-blue-600 transition-colors font-medium py-2"
                   >
-                    Profili Im
+                    <User className="w-5 h-5" />
+                    <span>Profili Im</span>
                   </Link>
                   <Link
                     to="/orders"
                     onClick={closeMenu}
-                    className="block text-gray-700 hover:text-blue-600 transition-colors font-medium py-2"
+                    className="flex items-center space-x-3 text-gray-700 hover:text-blue-600 transition-colors font-medium py-2"
                   >
-                    Porositë e Mia
+                    <Package className="w-5 h-5" />
+                    <span>Porositë e Mia</span>
                   </Link>
                   <button
                     onClick={() => {
                       handleLogout()
                       closeMenu()
                     }}
-                    className="w-full text-left text-red-600 hover:text-red-700 transition-colors font-medium py-2"
+                    className="flex items-center space-x-3 text-red-600 hover:bg-red-50 transition-colors w-full font-medium py-2 rounded-md"
                   >
-                    Dilni
+                    <LogOut className="w-5 h-5" />
+                    <span>Dilni</span>
                   </button>
-                </>
+                </div>
               ) : (
                 <div className="space-y-2">
                   <Link
                     to="/login"
                     onClick={closeMenu}
-                    className="block w-full text-center px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    className="block text-center px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors font-medium"
                   >
                     Kyçu
                   </Link>
                   <Link
                     to="/signup"
                     onClick={closeMenu}
-                    className="block w-full text-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium shadow-md hover:shadow-lg"
+                    className="block text-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium shadow-md hover:shadow-lg"
                   >
                     Regjistrohu
                   </Link>

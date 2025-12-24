@@ -1,16 +1,6 @@
 <?php
-header('Access-Control-Allow-Origin: http://localhost:5173');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Credentials: true');
-header('Content-Type: application/json');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-require_once 'db.php';
+require_once 'init.php';
+$conn = db_connect();
 
 try {
     if (!isset($_GET['id'])) {
@@ -27,7 +17,13 @@ try {
     }
     
     // Build the query dynamically based on existing columns
-    $select_fields = ['id', 'name', 'description', 'price', 'stock'];
+    // Prefer `available` column; fall back to `stock` if present
+    $select_fields = ['id', 'name', 'description', 'price'];
+    if (in_array('available', $existing_columns)) {
+        $select_fields[] = 'available';
+    } else if (in_array('stock', $existing_columns)) {
+        $select_fields[] = 'stock';
+    }
     
     // Add optional fields if they exist
     $optional_fields = [
@@ -105,8 +101,8 @@ try {
         'name' => $product['name'],
         'description' => $product['description'],
         'price' => (float)$product['price'],
-        'stock' => (int)$product['stock'],
-        'category' => isset($product['category']) ? $product['category'] : '',
+        'available' => isset($product['available']) ? (bool)$product['available'] : (isset($product['stock']) ? ((int)$product['stock'] > 0) : true),
+            'category' => isset($product['category']) ? $product['category'] : '',
         'is_active' => isset($product['is_active']) ? (bool)$product['is_active'] : true,
         'featured' => isset($product['featured']) ? (bool)$product['featured'] : false,
         'rating' => isset($product['rating']) && $product['rating'] ? (float)$product['rating'] : 4.5,

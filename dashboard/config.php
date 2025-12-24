@@ -4,15 +4,21 @@ define('DASHBOARD_TITLE', 'Hotel KS - Admin Dashboard');
 define('ITEMS_PER_PAGE', 10);
 define('MAX_FILE_SIZE', 5242880); // 5MB in bytes
 
-// Base paths
-define('BACKEND_URL', 'http://localhost/hotel-ks/backend');
-define('DASHBOARD_URL', 'http://localhost/hotel-ks/dashboard');
+// Base paths - update these when deploying to production
+define('BACKEND_URL', 'https://hotel-ks.com/backend');
+define('DASHBOARD_URL', 'https://dashboard.hotel-ks.com');
+
+// Enable temporary debug on dashboard to show PHP errors (set to false in production)
+if (!defined('DASHBOARD_DEBUG')) define('DASHBOARD_DEBUG', true);
+
+// Dashboard cookie domain for subdomain deployment (leading dot allows sharing across subdomains)
+define('DASHBOARD_COOKIE_DOMAIN', '.hotel-ks.com');
 
 // Session configuration - must be set BEFORE session_start()
 if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_only_cookies', 1);
-    ini_set('session.cookie_secure', 0); // Set to 1 in production with HTTPS
+    ini_set('session.cookie_secure', 1); // Use secure cookies in production (HTTPS)
 }
 
 // Timezone

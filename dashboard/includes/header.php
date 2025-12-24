@@ -63,10 +63,29 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- Mobile Menu Button -->
-    <button id="mobile-menu-button" class="lg:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded-lg shadow-lg">
-        <i class="fas fa-bars text-xl"></i>
-    </button>
-
     <!-- Sidebar Overlay -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+
+    <script>
+        // Ensure sidebar close behavior works across all pages.
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeBtn = document.getElementById('close-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const sidebar = document.getElementById('sidebar');
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    if (sidebar) sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                });
+            }
+
+            // safety: also close when pressing Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (sidebar) sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                }
+            });
+        });
+    </script>

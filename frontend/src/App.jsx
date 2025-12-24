@@ -1,19 +1,18 @@
-import Cart from './pages/Cart'
-import Navbar from './components/Navbar'
-import Products from './pages/Products'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Contact from './pages/Contact'
-import Login from './pages/Login'
-import Profile from './pages/Profile'
-import { AuthProvider } from './context/AuthContext'
-import Home from './pages/Home'
-import Footer from './components/Footer'
-import { CartProvider } from './context/CartContext'
-import ProductDetail from './pages/ProductDetail'
-import Signup from './pages/Signup'
-import About from './pages/About'
-import Checkout from './pages/Checkout'
-import OrderSuccess from './pages/OrderSuccess'
+import Cart from "./pages/Cart";
+import Navbar from "./components/Navbar";
+import Products from "./pages/Products";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Contact from "./pages/Contact";
+import PolicyPage from "./pages/PolicyPage";
+import Login from "./pages/Login";
+import Profile from "./pages/Profile";
+import { AuthProvider } from "./context/AuthContext";
+import Footer from "./components/Footer";
+import { CartProvider } from "./context/CartContext";
+import ProductDetail from "./pages/ProductDetail";
+import Signup from "./pages/Signup";
+import Checkout from "./pages/Checkout";
+import OrderSuccess from "./pages/OrderSuccess";
 
 function App() {
   return (
@@ -24,7 +23,7 @@ function App() {
             <Navbar />
             <main className="flex-grow">
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Products />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
                 <Route path="/login" element={<Login />} />
@@ -32,8 +31,8 @@ function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/order-success" element={<OrderSuccess />} />
-                <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/policy" element={<PolicyPage />} />
                 <Route path="/profile" element={<Profile />} />
               </Routes>
             </main>
@@ -42,7 +41,7 @@ function App() {
         </Router>
       </CartProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;

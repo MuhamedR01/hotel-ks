@@ -1,21 +1,12 @@
 <?php
+require_once 'init.php';
+
+// Production: hide errors and buffer output
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
-
 ob_start();
 
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Credentials: true");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    ob_end_clean();
-    exit(0);
-}
-
-include 'db.php';
+$conn = db_connect();
 session_start();
 
 if (!isset($_SESSION['user_id'])) {

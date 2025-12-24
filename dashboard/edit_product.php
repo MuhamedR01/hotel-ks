@@ -1,9 +1,14 @@
 <?php
 $page_title = 'Ndrysho Produktin';
 $current_page = 'products';
+require_once __DIR__ . '/init.php';
 require_once 'includes/auth_check.php';
+// Only manager and super_admin can edit products
+requireRole(['super_admin','manager']);
 require_once 'config.php';
-require_once '../backend/db.php';
+require_once __DIR__ . '/../backend/init.php';
+
+$conn = db_connect();
 
 $msg = '';
 $error = '';
@@ -39,10 +44,20 @@ function getImageSrc($image_data, $mime_type = 'image/jpeg') {
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // CSRF protection
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        $error = 'Invalid CSRF token. Please refresh the page and try again.';
+    } else {
     $name = trim($_POST['name'] ?? '');
     $price = floatval($_POST['price'] ?? 0);
     $description = trim($_POST['description'] ?? '');
-    $stock = intval($_POST['stock'] ?? 0);
+    // Prefer boolean availability flag when present, otherwise use numeric stock
+    $available = null;
+    if (isset($_POST['available'])) {
+        $available = ($_POST['available'] === '1') ? 1 : 0;
+    } else {
+        $available = isset($_POST['stock']) ? intval($_POST['stock']) : (isset($product['available']) ? (int)$product['available'] : (($product['stock'] ?? 0) > 0 ? 1 : 0));
+    }
 
     // Validate required fields
     if (empty($name) || $price <= 0) {
@@ -91,9 +106,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Update product if no errors
         if (empty($error)) {
             // Build the SQL query dynamically
-            $columns = ['name=?', 'price=?', 'description=?', 'stock=?', 'updated_at=NOW()'];
+            // Check if `available` column exists in the products table
+            $colCheck = $conn->query("SHOW COLUMNS FROM products LIKE 'available'");
+            $useAvailableCol = $colCheck && $colCheck->num_rows > 0;
+
+            if ($useAvailableCol) {
+                $columns = ['name=?', 'price=?', 'description=?', 'available=?', 'updated_at=NOW()'];
+            } else {
+                $columns = ['name=?', 'price=?', 'description=?', 'stock=?', 'updated_at=NOW()'];
+            }
             $types = 'sdsi';
-            $params = [$name, $price, $description, $stock];
+            $params = [$name, $price, $description, $available];
             
             // Add image columns if new images are uploaded
             if (!empty($images)) {
@@ -152,6 +175,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -235,6 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Form -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
                 <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCSRFToken()); ?>">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Product Name -->
                         <div class="md:col-span-2">
@@ -248,10 +274,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <input type="number" step="0.01" id="price" name="price" value="<?php echo htmlspecialchars($product['price']); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                         </div>
 
-                        <!-- Stock -->
+                        <!-- Availability / Stock -->
                         <div>
-                            <label for="stock" class="block text-sm font-medium text-gray-700 mb-1">Stoku</label>
-                            <input type="number" id="stock" name="stock" value="<?php echo htmlspecialchars($product['stock']); ?>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label for="available" class="block text-sm font-medium text-gray-700 mb-1">Stoku</label>
+                            <?php $currentAvailable = isset($product['available']) ? (int)$product['available'] : ((isset($product['stock']) && $product['stock'] > 0) ? 1 : 0); ?>
+                            <select id="available" name="available" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="1" <?php echo $currentAvailable ? 'selected' : ''; ?>>Ne stok</option>
+                                <option value="0" <?php echo !$currentAvailable ? 'selected' : ''; ?>>Pa stok</option>
+                            </select>
                         </div>
 
                         <!-- Description -->

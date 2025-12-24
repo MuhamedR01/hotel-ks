@@ -1,16 +1,15 @@
 <?php
-session_start();
+require_once __DIR__ . '/init.php';
+require_once 'includes/auth_check.php';
 require_once 'config.php';
-require_once 'db.php';
+require_once __DIR__ . '/../backend/init.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
-    exit();
-}
+$conn = db_connect();
 
 // Get current page for sidebar
 $current_page = 'orders';
+// Allow super_admin, manager and worker
+requireRole(['super_admin','manager','worker']);
 
 // Get filters
 $status = $_GET['status'] ?? '';

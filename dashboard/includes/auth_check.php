@@ -37,6 +37,46 @@ function hasPermission($permission) {
     return true;
 }
 
+// Normalize and get admin role
+function getAdminRole() {
+    $role = $_SESSION['admin_role'] ?? 'admin';
+    $role = strtolower(trim($role));
+    $role = str_replace([' ', '-'], '_', $role);
+    if (in_array($role, ['admin', 'superadmin', 'super_admin'])) {
+        return 'super_admin';
+    }
+    if ($role === 'manager') return 'manager';
+    if ($role === 'worker') return 'worker';
+    return 'super_admin';
+}
+
+// Check if current admin has one of the roles
+function hasRole(array $roles) {
+    $role = getAdminRole();
+    return in_array($role, $roles);
+}
+
+// Return landing page for role
+function getRoleLanding($role = null) {
+    if ($role === null) $role = getAdminRole();
+    switch ($role) {
+        case 'manager': return 'products.php';
+        case 'worker': return 'orders.php';
+        case 'super_admin':
+        default:
+            return 'index.php';
+    }
+}
+
+// Require one of the roles, otherwise redirect to role landing
+function requireRole(array $allowedRoles) {
+    if (!hasRole($allowedRoles)) {
+        $landing = getRoleLanding();
+        header('Location: ' . $landing);
+        exit();
+    }
+}
+
 // Function to log admin activity (optional)
 function logActivity($action, $details = '') {
     global $conn, $admin_id;

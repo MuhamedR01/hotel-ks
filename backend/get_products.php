@@ -1,18 +1,14 @@
 <?php
-header('Access-Control-Allow-Origin: http://localhost:5173');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Credentials: true');
-header('Content-Type: application/json');
+require_once 'init.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-require_once 'db.php';
+// Ensure we return JSON only and suppress direct HTML error output that breaks JSON parsing on the client.
+ini_set('display_errors', 0);
+header('Content-Type: application/json; charset=utf-8');
+ob_start();
 
 try {
+    // Connect to DB inside the try so exceptions are caught and returned as JSON
+    $conn = db_connect();
     // Get optional query parameters
     $limit = isset($_GET['limit']) ? intval($_GET['limit']) : null;
     $exclude = isset($_GET['exclude']) ? intval($_GET['exclude']) : null;
@@ -25,8 +21,28 @@ try {
     $mime_check = $conn->query("SHOW COLUMNS FROM products LIKE 'image_mime_type'");
     $has_mime_type = $mime_check && $mime_check->num_rows > 0;
     
+    // Check for availability column (preferred) or fallback to stock if present
+    $avail_check = $conn->query("SHOW COLUMNS FROM products LIKE 'available'");
+    $has_available = $avail_check && $avail_check->num_rows > 0;
+    $stock_check = $conn->query("SHOW COLUMNS FROM products LIKE 'stock'");
+    $has_stock = $stock_check && $stock_check->num_rows > 0;
+    // Check for has_sizes column
+    $sizes_check = $conn->query("SHOW COLUMNS FROM products LIKE 'has_sizes'");
+    $has_has_sizes = $sizes_check && $sizes_check->num_rows > 0;
+
     // Build the base query
-    $query = "SELECT id, name, description, price, image, stock, created_at";
+    $query = "SELECT id, name, description, price, image, created_at";
+    if ($has_available) {
+        $query .= ", available";
+    } else if ($has_stock) {
+        // if available column doesn't exist, include stock (legacy)
+        $query .= ", stock";
+    }
+
+    // Include has_sizes flag if present
+    if ($has_has_sizes) {
+        $query .= ", has_sizes";
+    }
     
     if ($has_image_type) {
         $query .= ", image_type";
@@ -99,8 +115,9 @@ try {
                 $row['image'] = "data:{$imageType};base64,{$base64}";
             }
         } else {
-            // Provide placeholder image
-            $row['image'] = 'https://via.placeholder.com/400x300?text=No+Image';
+            // Provide inline SVG placeholder (offline-safe)
+            $svg = '%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23ddd%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E';
+            $row['image'] = 'data:image/svg+xml,' . $svg;
         }
         
         // Remove image_type from response as it's no longer needed
@@ -111,7 +128,20 @@ try {
         // Ensure numeric fields are properly typed
         $row['id'] = (int)$row['id'];
         $row['price'] = (float)$row['price'];
-        $row['stock'] = isset($row['stock']) ? (int)$row['stock'] : 0;
+        // Normalize availability: prefer explicit `available` column; otherwise infer from stock when present; default to available
+        if (isset($row['available'])) {
+            $row['available'] = (int)$row['available'];
+        } else if (isset($row['stock'])) {
+            $row['available'] = ((int)$row['stock']) > 0 ? 1 : 0;
+            unset($row['stock']);
+        } else {
+            $row['available'] = 1;
+        }
+
+        // Normalize has_sizes flag to boolean when present
+        if (isset($row['has_sizes'])) {
+            $row['has_sizes'] = (int)$row['has_sizes'] ? 1 : 0;
+        }
         
         $products[] = $row;
     }
@@ -119,13 +149,16 @@ try {
     $stmt->close();
     $conn->close();
     
-    // Return success response
+    // Return success response (clear any buffered output first)
+    ob_end_clean();
     echo json_encode([
         'success' => true,
         'products' => $products
     ]);
     
 } catch (Exception $e) {
+    // Clean any buffered output (warnings, notices) to ensure a valid JSON response
+    if (ob_get_length() !== false) ob_end_clean();
     http_response_code(500);
     echo json_encode([
         'success' => false,

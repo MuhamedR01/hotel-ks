@@ -1,7 +1,23 @@
 <?php
-require_once '../backend/db.php';
+require_once __DIR__ . '/../backend/init.php';
+
+$conn = db_connect();
 
 echo "<h2>Admin Password Reset</h2>";
+
+// Protect this script: allow only when an admin is logged OR when a one-time SETUP_TOKEN is provided via GET
+if (session_status() === PHP_SESSION_NONE) session_start();
+$allowed = false;
+if (isset($_SESSION['admin_logged']) && $_SESSION['admin_logged'] === true) {
+    $allowed = true;
+} elseif (defined('SETUP_TOKEN') && !empty(SETUP_TOKEN) && isset($_GET['token']) && hash_equals(SETUP_TOKEN, $_GET['token'])) {
+    $allowed = true;
+}
+
+if (!$allowed) {
+    echo "<p style='color: red;'>This script is protected. Log in as admin or provide a valid setup token.</p>";
+    exit;
+}
 
 // Check if admins table exists
 $table_check = $conn->query("SHOW TABLES LIKE 'admins'");

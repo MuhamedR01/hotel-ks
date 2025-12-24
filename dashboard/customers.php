@@ -1,6 +1,8 @@
 <?php
 $current_page = 'customers';
 require_once 'includes/auth_check.php';
+// Only super_admin can view customers
+requireRole(['super_admin']);
 require_once 'includes/header.php';
 require_once 'includes/sidebar.php';
 require_once 'db.php';
@@ -79,56 +81,7 @@ while ($row = $result->fetch_assoc()) {
             <p class="text-gray-600 mt-1">Menaxhoni dhe shikoni informacionin e klientëve</p>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600 mb-1">Total Klientë</p>
-                        <p class="text-3xl font-bold text-gray-900"><?php echo $total_customers; ?></p>
-                    </div>
-                    <div class="bg-blue-100 p-3 rounded-lg">
-                        <i class="fas fa-users text-blue-600 text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <?php
-            // Get active customers (ordered in last 30 days)
-            $active_sql = "SELECT COUNT(DISTINCT user_id) as active FROM orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
-            $active_result = $conn->query($active_sql);
-            $active_customers = $active_result->fetch_assoc()['active'];
-            ?>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600 mb-1">Klientë Aktivë (30 ditë)</p>
-                        <p class="text-3xl font-bold text-gray-900"><?php echo $active_customers; ?></p>
-                    </div>
-                    <div class="bg-green-100 p-3 rounded-lg">
-                        <i class="fas fa-user-check text-green-600 text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <?php
-            // Get new customers (registered in last 7 days)
-            $new_sql = "SELECT COUNT(*) as new_customers FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
-            $new_result = $conn->query($new_sql);
-            $new_customers = $new_result->fetch_assoc()['new_customers'];
-            ?>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600 mb-1">Klientë të Rinj (7 ditë)</p>
-                        <p class="text-3xl font-bold text-gray-900"><?php echo $new_customers; ?></p>
-                    </div>
-                    <div class="bg-purple-100 p-3 rounded-lg">
-                        <i class="fas fa-user-plus text-purple-600 text-2xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- (Statistics removed per request) -->
 
         <!-- Search and Filters -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -175,11 +128,8 @@ while ($row = $result->fetch_assoc()) {
                                 Kontakti
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Lokacioni
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Statistikat
-                            </th>
+                                    Lokacioni
+                                </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Regjistruar
                             </th>
@@ -191,7 +141,7 @@ while ($row = $result->fetch_assoc()) {
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if (empty($customers)): ?>
                         <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                                 <i class="fas fa-users text-4xl mb-2"></i>
                                 <p>Nuk u gjetën klientë</p>
                             </td>
@@ -232,27 +182,12 @@ while ($row = $result->fetch_assoc()) {
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
+                                    <?php echo htmlspecialchars($customer['address'] ?? ''); ?>
+                                </div>
+                                <div class="text-sm text-gray-500">
                                     <?php echo htmlspecialchars($customer['city'] ?? 'N/A'); ?>
+                                    <?php if (!empty($customer['country'])): ?>, <?php echo htmlspecialchars($customer['country']); ?><?php endif; ?>
                                 </div>
-                                <div class="text-sm text-gray-500">
-                                    <?php echo htmlspecialchars($customer['country'] ?? 'N/A'); ?>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
-                                    <i class="fas fa-shopping-cart text-gray-400 mr-2"></i>
-                                    <?php echo $customer['total_orders']; ?> porosi
-                                </div>
-                                <div class="text-sm text-gray-500">
-                                    <i class="fas fa-money-bill-wave text-gray-400 mr-2"></i>
-                                    <?php echo number_format($customer['total_spent'], 2); ?> €
-                                </div>
-                                <?php if ($customer['last_order_date']): ?>
-                                <div class="text-xs text-gray-400 mt-1">
-                                    <i class="fas fa-clock text-gray-400 mr-2"></i>
-                                    <?php echo date('d/m/Y', strtotime($customer['last_order_date'])); ?>
-                                </div>
-                                <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <?php echo date('d/m/Y', strtotime($customer['created_at'])); ?>

@@ -1,0 +1,10 @@
+# Ignore VS Code SFTP config with credentials
+.vscode/sftp.json
+
+# Node / build
+frontend/dist
+frontend/node_modules
+
+# Other
+*.log
+.env

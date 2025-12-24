@@ -1,35 +1,22 @@
 <?php
-session_start();
-// Disable error display, log them instead
+require_once 'init.php';
+
+// Disable error display, log them instead (production)
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 // Start output buffering
 ob_start();
 
-// Set headers first
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Credentials: true");
-
-// Handle preflight
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    ob_end_clean();
-    exit(0);
-}
-
 // Only allow POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    ob_end_clean();
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method not allowed']);
     exit();
 }
 
 try {
-    require_once 'db.php';
+    $conn = db_connect();
 
     // Get and parse input
     $rawInput = file_get_contents('php://input');

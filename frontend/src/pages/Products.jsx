@@ -1,79 +1,82 @@
-
-import { useState, useEffect, useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import { useCart } from '../context/CartContext'
+import { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 function Products() {
-  const { addToCart } = useCart()
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [sortBy, setSortBy] = useState('default')
+  const { addToCart } = useCart();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("default");
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch('http://localhost/hotel-ks/backend/get_products.php')
-        const data = await res.json()
-        
-        if (!res.ok) {
-          console.error('Server error details:', data)
-          throw new Error(data.message || data.error || 'Failed to fetch products')
-        }
-        
-        // Handle both old format (array) and new format (object with success property)
-        const productsData = data.success ? data.products : data
-        setProducts(productsData)
-      } catch (err) {
-        console.error('Gabim në ngarkimin e produkteve:', err)
-        setError(err.message)
-      } finally {
-        setLoading(false)
-      }
-    }
+        const base = import.meta.env.VITE_API_BASE_URL || "/backend";
+        const res = await fetch(`${base}/get_products.php`);
+        const data = await res.json();
 
-    fetchProducts()
-  }, [])
+        if (!res.ok) {
+          console.error("Server error details:", data);
+          throw new Error(
+            data.message || data.error || "Failed to fetch products"
+          );
+        }
+
+        // Handle both old format (array) and new format (object with success property)
+        const productsData = data.success ? data.products : data;
+        setProducts(productsData);
+      } catch (err) {
+        console.error("Gabim në ngarkimin e produkteve:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const handleAddToCart = (product) => {
     // Check if product has sizes
     if (product.has_sizes && product.sizes && product.sizes.length > 0) {
       // Show alert to select size on product detail page
-      const toast = document.createElement('div')
-      toast.className = 'fixed bottom-4 right-4 bg-yellow-600 text-white px-6 py-3 rounded-lg shadow-lg z-50'
-      toast.textContent = 'Ju lutem zgjidhni madhësinë në faqen e produktit'
-      document.body.appendChild(toast)
-      setTimeout(() => toast.remove(), 3000)
-      return
+      const toast = document.createElement("div");
+      toast.className =
+        "fixed bottom-4 right-4 bg-yellow-600 text-white px-6 py-3 rounded-lg shadow-lg z-50";
+      toast.textContent = "Ju lutem zgjidhni madhësinë në faqen e produktit";
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+      return;
     }
 
-    addToCart(product)
+    addToCart(product);
     // Show toast notification
-    const toast = document.createElement('div')
-    toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50'
-    toast.textContent = `${product.name} u shtua në shportë!`
-    document.body.appendChild(toast)
-    setTimeout(() => toast.remove(), 3000)
-  }
+    const toast = document.createElement("div");
+    toast.className =
+      "fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50";
+    toast.textContent = `${product.name} u shtua në shportë!`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  };
 
   const sortedProducts = useMemo(() => {
-    let filtered = products.filter(
-      (product) =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    let filtered = products.filter((product) =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     switch (sortBy) {
-      case 'price-low':
-        return filtered.sort((a, b) => a.price - b.price)
-      case 'price-high':
-        return filtered.sort((a, b) => b.price - a.price)
-      case 'name':
-        return filtered.sort((a, b) => a.name.localeCompare(b.name))
+      case "price-low":
+        return filtered.sort((a, b) => a.price - b.price);
+      case "price-high":
+        return filtered.sort((a, b) => b.price - a.price);
+      case "name":
+        return filtered.sort((a, b) => a.name.localeCompare(b.name));
       default:
-        return filtered
+        return filtered;
     }
-  }, [products, searchQuery, sortBy])
+  }, [products, searchQuery, sortBy]);
 
   if (loading) {
     return (
@@ -83,7 +86,7 @@ function Products() {
           <p className="text-xl text-gray-600">Duke ngarkuar produktet...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -91,10 +94,22 @@ function Products() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-600 mb-4">
-            <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-16 h-16 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
-            <p className="text-lg font-semibold">Gabim në ngarkimin e produkteve</p>
+            <p className="text-lg font-semibold">
+              Gabim në ngarkimin e produkteve
+            </p>
             <p className="text-sm text-gray-600 mt-2">{error}</p>
           </div>
           <button
@@ -105,7 +120,7 @@ function Products() {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -113,8 +128,12 @@ function Products() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Produktet Tona</h1>
-          <p className="text-xl text-gray-600">Zbuloni koleksionin tonë të produkteve me cilësi hoteli</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Produktet Tona
+          </h1>
+          <p className="text-xl text-gray-600">
+            Zbuloni koleksionin tonë të produkteve me cilësi hoteli
+          </p>
         </div>
 
         {/* Search and Filters */}
@@ -122,7 +141,9 @@ function Products() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Search */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Kërko</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Kërko
+              </label>
               <input
                 type="text"
                 placeholder="Kërko produkte..."
@@ -134,7 +155,9 @@ function Products() {
 
             {/* Sort */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Rendit sipas</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Rendit sipas
+              </label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -142,7 +165,9 @@ function Products() {
               >
                 <option value="default">Të parazgjedhura</option>
                 <option value="price-low">Çmimi: nga i ulët në të lartë</option>
-                <option value="price-high">Çmimi: nga i lartë në të ulët</option>
+                <option value="price-high">
+                  Çmimi: nga i lartë në të ulët
+                </option>
                 <option value="name">Emri A-Z</option>
               </select>
             </div>
@@ -152,7 +177,9 @@ function Products() {
         {/* Results Count */}
         <div className="mb-6">
           <p className="text-gray-600">
-            Duke shfaqur <span className="font-semibold">{sortedProducts.length}</span> produkte
+            Duke shfaqur{" "}
+            <span className="font-semibold">{sortedProducts.length}</span>{" "}
+            produkte
           </p>
         </div>
 
@@ -167,19 +194,16 @@ function Products() {
               >
                 <div className="relative h-48 sm:h-64 overflow-hidden bg-gray-100">
                   <img
-                    src={product.image || 'https://via.placeholder.com/400x300?text=No+Image'}
+                    src={product.image}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/400x300?text=No+Image'
+                      const svg =
+                        "%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23ddd%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E";
+                      e.target.src = "data:image/svg+xml," + svg;
                     }}
                   />
-                  {product.stock < 10 && product.stock > 0 && (
-                    <div className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                      Vetëm {product.stock}
-                    </div>
-                  )}
-                  {product.stock === 0 && (
+                  {!(product.available ?? true) && (
                     <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
                       Mbaruar
                     </div>
@@ -196,7 +220,7 @@ function Products() {
                     <span className="text-lg sm:text-2xl font-bold text-blue-600">
                       €{Number(product.price).toFixed(2)}
                     </span>
-                    {product.stock > 0 && (
+                    {(product.available ?? true) && (
                       <span className="text-xs sm:text-sm text-green-600 font-medium">
                         Në stok
                       </span>
@@ -204,19 +228,19 @@ function Products() {
                   </div>
                   <button
                     onClick={(e) => {
-                      e.preventDefault()
-                      if (product.stock > 0) {
-                        handleAddToCart(product)
+                      e.preventDefault();
+                      if (product.available ?? true) {
+                        handleAddToCart(product);
                       }
                     }}
-                    disabled={product.stock === 0}
+                    disabled={!(product.available ?? true)}
                     className={`w-full py-2 rounded-lg transition-colors font-semibold text-sm ${
-                      product.stock > 0
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      product.available ?? true
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                   >
-                    {product.stock > 0 ? 'Shto në Shportë' : 'Mbaruar'}
+                    {product.available ?? true ? "Shto në Shportë" : "Mbaruar"}
                   </button>
                 </div>
               </Link>
@@ -237,12 +261,14 @@ function Products() {
                 d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-2">Nuk u gjet asnjë produkt</h3>
+            <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+              Nuk u gjet asnjë produkt
+            </h3>
             <p className="text-gray-600 mb-6">Provo të rregullosh kërkimin</p>
             <button
               onClick={() => {
-                setSearchQuery('')
-                setSortBy('default')
+                setSearchQuery("");
+                setSortBy("default");
               }}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
             >
@@ -252,7 +278,7 @@ function Products() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Products
+export default Products;

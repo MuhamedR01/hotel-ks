@@ -1,11 +1,14 @@
 <?php
 // dashboard or admin API endpoint for adding product (expects form POST)
-include 'db.php';
+require_once __DIR__ . '/init.php';
+
 session_start();
 if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
     header('Location: /dashboard/login.php');
     exit();
 }
+
+$conn = db_connect();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'] ?? '';
@@ -20,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header('Location: /dashboard/index.php?msg=added');
         exit();
     } else {
+        // Log error server-side
+        error_log('Failed to insert product: ' . $stmt->error);
         echo "Error inserting product";
     }
 }

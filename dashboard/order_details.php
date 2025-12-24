@@ -1,12 +1,9 @@
 <?php
-session_start();
-require_once '../backend/db.php';
+require_once __DIR__ . '/init.php';
+require_once 'includes/auth_check.php';
+require_once __DIR__ . '/../backend/init.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
-    header('Location: login.php');
-    exit();
-}
+$conn = db_connect();
 
 $current_page = 'order_details';
 
@@ -20,6 +17,14 @@ if ($order_id <= 0) {
 
 // Handle status update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
+    // CSRF protection
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        $_SESSION['success_message'] = '';
+        $_SESSION['error_message'] = 'Invalid CSRF token.';
+        header("Location: order_details.php?id=" . $order_id);
+        exit();
+    }
+
     $new_status = $_POST['status'];
     $allowed_statuses = ['pending', 'shipped', 'completed', 'cancelled'];
     
@@ -53,9 +58,8 @@ if ($result->num_rows === 0) {
 
 $order = $result->fetch_assoc();
 
-// Get order items
 $items_stmt = $conn->prepare("
-    SELECT oi.*, p.name as product_name, p.image as product_image 
+    SELECT oi.*, p.name as product_name, p.image as product_image, p.image_type as product_image_type 
     FROM order_items oi 
     LEFT JOIN products p ON oi.product_id = p.id 
     WHERE oi.order_id = ?
@@ -92,9 +96,6 @@ require_once 'includes/header.php';
                     <button id="mobile-menu-button" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
-                    <a href="orders.php" class="text-gray-600 hover:text-gray-900 hidden sm:block">
-                        <i class="fas fa-arrow-left"></i>
-                    </a>
                     <div>
                         <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Porosia #<?php echo htmlspecialchars($order['order_number']); ?></h1>
                         <p class="text-xs sm:text-sm text-gray-500 mt-1 hidden sm:block">Detajet e porosisë</p>
@@ -157,6 +158,7 @@ require_once 'includes/header.php';
 
                 <!-- Status Update Form -->
                 <form method="POST" class="mb-6 no-print">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCSRFToken()); ?>">
                     <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                         <select name="status" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
                             <option value="pending" <?php echo $order['status'] == 'pending' ? 'selected' : ''; ?>>Duke u Procesuar</option>
@@ -226,6 +228,7 @@ require_once 'includes/header.php';
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produkt</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Madhësia</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cmimi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sasia</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shuma</th>
@@ -236,17 +239,55 @@ require_once 'includes/header.php';
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        <?php if ($item['product_image']): ?>
-                                            <img class="h-10 w-10 rounded-md object-cover mr-3" src="<?php echo htmlspecialchars($item['product_image']); ?>" alt="<?php echo htmlspecialchars($item['product_name']); ?>">
-                                        <?php else: ?>
-                                            <div class="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center mr-3">
-                                                <i class="fas fa-image text-gray-500"></i>
-                                            </div>
-                                        <?php endif; ?>
+                                        <?php
+                                        // Render product image. Products may store images as BLOBs, data URLs, or remote/relative URLs.
+                                        $imgSrc = '';
+                                        if (isset($item['product_image']) && $item['product_image'] !== null && $item['product_image'] !== '') {
+                                            $prodImg = $item['product_image'];
+                                            // If it's already a data URL or an http(s) URL or starts with a slash, use as-is
+                                            $startsWithData = is_string($prodImg) && strpos($prodImg, 'data:') === 0;
+                                            $isHttp = is_string($prodImg) && preg_match('#^https?://#i', $prodImg);
+                                            $isRelative = is_string($prodImg) && strpos($prodImg, '/') === 0;
+
+                                            if ($startsWithData || $isHttp || $isRelative) {
+                                                $imgSrc = $prodImg;
+                                            } else {
+                                                // Assume binary BLOB — convert to base64 using the provided image type if available
+                                                $imgType = isset($item['product_image_type']) && $item['product_image_type'] ? $item['product_image_type'] : 'image/jpeg';
+                                                $imgSrc = 'data:' . $imgType . ';base64,' . base64_encode($prodImg);
+                                            }
+                                        }
+
+                                        if ($imgSrc) {
+                                            echo '<img class="h-10 w-10 rounded-md object-cover mr-3" src="' . htmlspecialchars($imgSrc) . '" alt="' . htmlspecialchars($item['product_name']) . '">';
+                                        } else {
+                                            echo '<div class="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center mr-3"><i class="fas fa-image text-gray-500"></i></div>';
+                                        }
+                                        ?>
                                         <div>
                                             <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($item['product_name']); ?></div>
                                         </div>
                                     </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <?php
+                                    // Support multiple possible size column names
+                                    $possibleKeys = ['size', 'selected_size', 'selectedSize', 'variant_size', 'option_size'];
+                                    $sizeVal = '';
+                                    foreach ($possibleKeys as $k) {
+                                        if (isset($item[$k]) && $item[$k] !== null && $item[$k] !== '') {
+                                            $sizeVal = $item[$k];
+                                            break;
+                                        }
+                                    }
+                                    // Normalize and display
+                                    if ($sizeVal !== '') {
+                                        $sizeVal = trim((string)$sizeVal);
+                                        echo '<span class="text-sm text-gray-700">' . htmlspecialchars($sizeVal) . '</span>';
+                                    } else {
+                                        echo '<span class="text-sm text-gray-400">N/A</span>';
+                                    }
+                                    ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <?php echo number_format($item['product_price'], 2, ',', '.'); ?>€
@@ -275,10 +316,7 @@ require_once 'includes/header.php';
                         <span class="text-gray-600">Nën Total:</span>
                         <span class="font-medium"><?php echo number_format($order['subtotal'], 2, ',', '.'); ?>€</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">TVSH (18%):</span>
-                        <span class="font-medium"><?php echo number_format($order['tax'], 2, ',', '.'); ?>€</span>
-                    </div>
+                    <!-- Tax removed as requested -->
                     <div class="flex justify-between">
                         <span class="text-gray-600">Shuma e Transportit:</span>
                         <span class="font-medium"><?php echo number_format($order['shipping_cost'], 2, ',', '.'); ?>€</span>
@@ -293,30 +331,23 @@ require_once 'includes/header.php';
     </main>
 
     <script>
-        // Mobile menu toggle - Fixed
-        const menuButton = document.getElementById('mobile-menu-button');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        const sidebar = document.getElementById('sidebar');
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        });
 
-        if (menuButton) {
-            menuButton.addEventListener('click', () => {
-                if (sidebar) {
-                    sidebar.classList.toggle('-translate-x-full');
-                }
-                if (sidebarOverlay) {
-                    sidebarOverlay.classList.toggle('hidden');
-                }
-            });
-        }
-
-        if (sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', () => {
-                if (sidebar) {
-                    sidebar.classList.add('-translate-x-full');
-                }
-                sidebarOverlay.classList.add('hidden');
-            });
-        }
+        // Close sidebar when clicking overlay
+        document.getElementById('sidebar-overlay').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = this;
+            
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        });
     </script>
 </body>
 </html>

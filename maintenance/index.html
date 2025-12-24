@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Hotel KS — Maintenance</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="maintenance-wrap">
+      <header class="brand">
+        <div class="logo-wrap">
+          <img
+            class="logo"
+            src="icon.svg"
+            alt="Hotel KS logo"
+            onerror="this.style.display='none'"
+          />
+        </div>
+        <h1>Hotel KS</h1>
+      </header>
+
+      <main class="card">
+        <div class="icon">🛠️</div>
+        <h2>Down for maintenance</h2>
+        <p class="lead">
+          We're performing scheduled maintenance to improve the site. We expect
+          to be back shortly — thank you for your patience.
+        </p>
+
+        <div class="details">
+          <p>Estimated downtime: <strong>Unknown</strong></p>
+          <p>
+            If you need urgent support, email us at
+            <a href="mailto:info@hotel-ks.com">info@hotel-ks.com</a>.
+          </p>
+        </div>
+
+        <a class="btn" href="/">Return to home</a>
+      </main>
+
+      <footer class="foot">
+        © <span id="year"></span> Hotel KS — All rights reserved.
+      </footer>
+    </div>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>

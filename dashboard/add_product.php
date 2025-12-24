@@ -1,22 +1,31 @@
 <?php
-session_start();
-if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
-    header('Location: login.php');
-    exit;
-}
-
-require_once '../backend/db.php';
+require_once __DIR__ . '/init.php';
+require_once 'includes/auth_check.php';
+require_once __DIR__ . '/../backend/init.php';
 require_once 'config.php';
 
+$conn = db_connect();
+
 $current_page = 'add_product';
+// Only manager and super_admin can add products
+requireRole(['super_admin','manager']);
 $msg = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // CSRF protection
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        $error = 'Invalid CSRF token. Please refresh the page and try again.';
+    } else {
     $name = trim($_POST['name'] ?? '');
     $price = floatval($_POST['price'] ?? 0);
     $description = trim($_POST['description'] ?? '');
-    $stock = intval($_POST['stock'] ?? 0);
+    // Prefer boolean availability when provided; otherwise fallback to numeric stock if present
+    if (isset($_POST['available'])) {
+        $available = ($_POST['available'] === '1') ? 1 : 0;
+    } else {
+        $available = isset($_POST['stock']) ? (intval($_POST['stock']) > 0 ? 1 : 0) : 1;
+    }
 
     // Validate required fields
     if (empty($name) || $price <= 0) {
@@ -65,10 +74,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Insert product if no errors
         if (empty($error)) {
             // Build the SQL query dynamically based on number of images
-            $columns = ['name', 'price', 'description', 'stock', 'created_at'];
-            $placeholders = ['?', '?', '?', '?', 'NOW()'];
-            $types = 'sdsi';
-            $params = [$name, $price, $description, $stock];
+            // Detect whether `available` column exists
+            $colCheck = $conn->query("SHOW COLUMNS FROM products LIKE 'available'");
+            $useAvailableCol = $colCheck && $colCheck->num_rows > 0;
+
+            if ($useAvailableCol) {
+                $columns = ['name', 'price', 'description', 'available', 'created_at'];
+                $placeholders = ['?', '?', '?', '?', 'NOW()'];
+                $types = 'sdsi';
+                $params = [$name, $price, $description, $available];
+            } else {
+                $columns = ['name', 'price', 'description', 'stock', 'created_at'];
+                $placeholders = ['?', '?', '?', '?', 'NOW()'];
+                $types = 'sdsi';
+                $params = [$name, $price, $description, ($available ? 1 : 0)];
+            }
             
             // Add image columns
             for ($i = 0; $i < count($images); $i++) {
@@ -122,7 +142,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $error = 'Gabim në përgatitjen e query: ' . $conn->error;
             }
         }
+$extra = "";
     }
+}
 }
 
 // Get admin info for sidebar
@@ -234,6 +256,7 @@ $admin_email = $_SESSION['admin_email'] ?? '';
             <!-- Form -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
                 <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCSRFToken()); ?>">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Product Name -->
                         <div class="md:col-span-2">
@@ -255,14 +278,16 @@ $admin_email = $_SESSION['admin_email'] ?? '';
                                    placeholder="0.00" required>
                         </div>
 
-                        <!-- Stock -->
+                        <!-- Availability / Stock -->
                         <div>
-                            <label for="stock" class="block text-sm font-medium text-gray-700 mb-1">
-                                Sasia në Stok
+                            <label for="available" class="block text-sm font-medium text-gray-700 mb-1">
+                                Stoku
                             </label>
-                            <input type="number" id="stock" name="stock" value="<?php echo htmlspecialchars($_POST['stock'] ?? ''); ?>" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                   placeholder="0" min="0">
+                            <?php $currentAvailable = isset($_POST['available']) ? intval($_POST['available']) : (isset($_POST['stock']) ? (intval($_POST['stock']) > 0 ? 1 : 0) : 1); ?>
+                            <select id="available" name="available" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="1" <?php echo $currentAvailable ? 'selected' : ''; ?>>Ne stok</option>
+                                <option value="0" <?php echo !$currentAvailable ? 'selected' : ''; ?>>Pa stok</option>
+                            </select>
                         </div>
 
                         <!-- Description -->

@@ -1,15 +1,8 @@
 <?php
-header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+require_once __DIR__ . '/init.php';
 
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
-}
-
-include 'db.php';
+// Use db helper and start session
+$conn = db_connect();
 session_start();
 
 $data = json_decode(file_get_contents('php://input'), true);
@@ -36,7 +29,7 @@ $notes = $data['notes'] ?? '';
 // Generate unique order number
 $order_number = 'ORD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
 
-// Insert order with status 'processing' (not 'pending')
+// Insert order with status 'processing'
 $stmt = $conn->prepare("INSERT INTO orders (
     order_number, 
     user_id, 
@@ -76,6 +69,8 @@ if ($stmt->execute()) {
     // Insert order items
     $item_stmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
     
+    $update_stmt = $conn->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?");
+
     foreach ($data['items'] as $item) {
         $product_id = intval($item['id']);
         $quantity = intval($item['quantity']);
@@ -83,12 +78,16 @@ if ($stmt->execute()) {
         
         $item_stmt->bind_param("iiid", $order_id, $product_id, $quantity, $price);
         $item_stmt->execute();
-        
-        // Update product stock if stock column exists
-        $conn->query("UPDATE products SET stock = stock - $quantity WHERE id = $product_id AND stock >= $quantity");
+
+        // Update product stock safely with prepared statement
+        if ($update_stmt) {
+            $update_stmt->bind_param("iii", $quantity, $product_id, $quantity);
+            $update_stmt->execute();
+        }
     }
     
     $item_stmt->close();
+    if ($update_stmt) $update_stmt->close();
     
     echo json_encode([
         'success' => true, 

@@ -1,5 +1,23 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF'], '.php');
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Normalize role similar to auth_check
+$raw_role = $_SESSION['admin_role'] ?? 'admin';
+$raw_role = strtolower(trim($raw_role));
+$raw_role = str_replace([' ', '-'], '_', $raw_role);
+if (in_array($raw_role, ['admin', 'superadmin', 'super_admin'])) {
+    $role = 'super_admin';
+} elseif ($raw_role === 'manager') {
+    $role = 'manager';
+} elseif ($raw_role === 'worker') {
+    $role = 'worker';
+} else {
+    $role = 'super_admin';
+}
 ?>
 
 <!-- Sidebar Overlay for Mobile -->
@@ -27,21 +45,28 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
 
         <!-- Navigation -->
         <nav class="space-y-2">
+            <?php if ($role === 'super_admin'): ?>
             <a href="index.php" class="sidebar-link <?php echo ($current_page == 'index') ? 'active' : ''; ?> flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors">
                 <i class="fas fa-home text-lg"></i>
                 <span class="font-medium">Dashboard</span>
             </a>
-            
+            <?php endif; ?>
+
+            <?php if (in_array($role, ['super_admin','manager'])): ?>
             <a href="products.php" class="sidebar-link <?php echo ($current_page == 'products') ? 'active' : ''; ?> flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors">
                 <i class="fas fa-box text-lg"></i>
                 <span class="font-medium">Produktet</span>
             </a>
-            
+            <?php endif; ?>
+
+            <?php if (in_array($role, ['super_admin','manager','worker'])): ?>
             <a href="orders.php" class="sidebar-link <?php echo ($current_page == 'orders') ? 'active' : ''; ?> flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors">
                 <i class="fas fa-shopping-cart text-lg"></i>
                 <span class="font-medium">Porositë</span>
             </a>
-            
+            <?php endif; ?>
+
+            <?php if ($role === 'super_admin'): ?>
             <a href="customers.php" class="sidebar-link <?php echo ($current_page == 'customers') ? 'active' : ''; ?> flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors">
                 <i class="fas fa-users text-lg"></i>
                 <span class="font-medium">Klientët</span>
@@ -51,6 +76,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                 <i class="fas fa-cog text-lg"></i>
                 <span class="font-medium">Cilësimet</span>
             </a>
+            <?php endif; ?>
         </nav>
 
         <!-- Logout Button -->

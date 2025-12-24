@@ -1,49 +1,52 @@
-
-import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { useCart } from '../context/CartContext'
+import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useCart } from "../context/CartContext";
 
 function Home() {
-  const { addToCart } = useCart()
-  const [featuredProducts, setFeaturedProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { addToCart } = useCart();
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Fetch featured products from backend
-    fetch('http://localhost/hotel-ks/backend/get_products.php?limit=3')
-      .then(res => {
+    const base = import.meta.env.VITE_API_BASE_URL || "/backend";
+    fetch(`${base}/get_products.php?limit=3`)
+      .then((res) => {
         if (!res.ok) {
-          return res.json().then(data => {
-            throw new Error(data.message || data.error || 'Failed to fetch products')
-          })
+          return res.json().then((data) => {
+            throw new Error(
+              data.message || data.error || "Failed to fetch products"
+            );
+          });
         }
-        return res.json()
+        return res.json();
       })
-      .then(data => {
-        console.log('Fetched products:', data)
+      .then((data) => {
+        console.log("Fetched products:", data);
         // Handle both old format (array) and new format (object with success property)
-        const productsData = data.success ? data.products : data
-        setFeaturedProducts(productsData)
-        setLoading(false)
+        const productsData = data.success ? data.products : data;
+        setFeaturedProducts(productsData);
+        setLoading(false);
       })
-      .catch(err => {
-        console.error('Gabim në ngarkimin e produkteve:', err)
-        setError(err.message)
-        setLoading(false)
-      })
-  }, [])
+      .catch((err) => {
+        console.error("Gabim në ngarkimin e produkteve:", err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
 
   const handleAddToCart = (product, e) => {
-    e.preventDefault()
-    addToCart(product)
+    e.preventDefault();
+    addToCart(product);
     // Show toast notification
-    const toast = document.createElement('div')
-    toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50'
-    toast.textContent = `${product.name} u shtua në shportë!`
-    document.body.appendChild(toast)
-    setTimeout(() => toast.remove(), 3000)
-  }
+    const toast = document.createElement("div");
+    toast.className =
+      "fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50";
+    toast.textContent = `${product.name} u shtua në shportë!`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  };
 
   return (
     <div className="min-h-screen">
@@ -89,30 +92,62 @@ function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-6">
               <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-8 h-8 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </div>
               <h3 className="text-xl font-semibold mb-2">Cilësi e Lartë</h3>
               <p className="text-gray-600">
-                Produktet tona janë të përzgjedhura me kujdes për të garantuar cilësinë më të mirë
+                Produktet tona janë të përzgjedhura me kujdes për të garantuar
+                cilësinë më të mirë
               </p>
             </div>
             <div className="text-center p-6">
               <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-8 h-8 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
               <h3 className="text-xl font-semibold mb-2">Çmim i Arsyeshëm</h3>
               <p className="text-gray-600">
-                Çmimet tona janë të arsyeshme duke ofruar vlerë maksimale për klientët tanë
+                Çmimet tona janë të arsyeshme duke ofruar vlerë maksimale për
+                klientët tanë
               </p>
             </div>
             <div className="text-center p-6">
               <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318 1.318a4.5 4.5 0 00-6.364 0z" />
+                <svg
+                  className="w-8 h-8 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318 1.318a4.5 4.5 0 00-6.364 0z"
+                  />
                 </svg>
               </div>
               <h3 className="text-xl font-semibold mb-2">Shërbim Klientësh</h3>
@@ -151,10 +186,22 @@ function Home() {
           ) : error ? (
             <div className="text-center py-12">
               <div className="text-red-600 mb-4">
-                <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-16 h-16 mx-auto mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
-                <p className="text-lg font-semibold">Gabim në ngarkimin e produkteve</p>
+                <p className="text-lg font-semibold">
+                  Gabim në ngarkimin e produkteve
+                </p>
                 <p className="text-sm text-gray-600 mt-2">{error}</p>
               </div>
               <button
@@ -166,11 +213,25 @@ function Home() {
             </div>
           ) : featuredProducts.length === 0 ? (
             <div className="text-center py-12">
-              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707-.293l-2.414-2.414a1 1 0 01-.293-.707V11a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707v2.586z" />
+              <svg
+                className="w-16 h-16 text-gray-400 mx-auto mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707-.293l-2.414-2.414a1 1 0 01-.293-.707V11a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707v2.586z"
+                />
               </svg>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Nuk ka produkte të disponueshme</h3>
-              <p className="text-gray-600 mb-4">Të gjitha produktet janë të shkarkuara momentalisht.</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Nuk ka produkte të disponueshme
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Të gjitha produktet janë të shkarkuara momentalisht.
+              </p>
               <Link
                 to="/products"
                 className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
@@ -181,7 +242,10 @@ function Home() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredProducts.map((product) => (
-                <div key={product.id} className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-all transform hover:-translate-y-2">
+                <div
+                  key={product.id}
+                  className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-all transform hover:-translate-y-2"
+                >
                   <div className="relative h-64 overflow-hidden bg-gray-100">
                     <img
                       src={product.image}
@@ -197,8 +261,10 @@ function Home() {
                       {product.name}
                     </h3>
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-blue-600">{product.price}€</span>
-                      <button 
+                      <span className="text-2xl font-bold text-blue-600">
+                        {product.price}€
+                      </span>
+                      <button
                         onClick={(e) => handleAddToCart(product, e)}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
                       >
@@ -229,7 +295,8 @@ function Home() {
             Gati për të Përmirësuar Shtëpinë tënde?
           </h2>
           <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
-            Bëhu pjesë e mijëve të klientëve të udhëhequr që kanë transformuar shtëpitë e tyre me produktet tona
+            Bëhu pjesë e mijëve të klientëve të udhëhequr që kanë transformuar
+            shtëpitë e tyre me produktet tona
           </p>
           <Link
             to="/signup"
@@ -240,7 +307,7 @@ function Home() {
         </div>
       </section>
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;

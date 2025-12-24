@@ -1,17 +1,137 @@
 <?php
+require_once __DIR__ . '/init.php';
 require_once 'includes/auth_check.php';
-require_once '../backend/db.php';
+require_once __DIR__ . '/../backend/init.php';
 
-$current_page = 'products';
+$conn = db_connect();
 
-// Handle product deletion
+ $current_page = 'products';
+// Require manager or super_admin
+requireRole(['super_admin','manager']);
+
+// Handle product deletion (require CSRF token)
 if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']);
+    $csrf = $_GET['csrf'] ?? '';
+    if (!validateCSRFToken($csrf)) {
+        http_response_code(400);
+        die('Invalid CSRF token');
+    }
+
     $stmt = $conn->prepare("DELETE FROM products WHERE id = ?");
     $stmt->bind_param("i", $id);
     
     if ($stmt->execute()) {
         header("Location: products.php?success=deleted");
+        exit();
+    }
+}
+
+// Handle availability toggle from dashboard (use `available` column if present, otherwise fallback to stock)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['set_availability']) && isset($_POST['product_id'])) {
+    // CSRF protection
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        http_response_code(400);
+        die('Invalid CSRF token');
+    }
+    $prod_id = intval($_POST['product_id']);
+    $available = (isset($_POST['available']) && $_POST['available'] === '1') ? 1 : 0;
+
+    // Check if `available` column exists
+    $colCheck = $conn->query("SHOW COLUMNS FROM products LIKE 'available'");
+    $useAvailableCol = $colCheck && $colCheck->num_rows > 0;
+
+    if ($useAvailableCol) {
+        $updateSql = "UPDATE products SET available = ? WHERE id = ?";
+    } else {
+        // fallback to stock column (legacy)
+        $updateSql = "UPDATE products SET stock = ? WHERE id = ?";
+    }
+
+    $updateStmt = $conn->prepare($updateSql);
+    if ($updateStmt) {
+        $updateStmt->bind_param('ii', $available, $prod_id);
+        if ($updateStmt->execute()) {
+            // Set a user-friendly session message
+            if (session_status() === PHP_SESSION_NONE) session_start();
+            if ($available) {
+                $_SESSION['success_message'] = 'Produkti u vendos në stok.';
+            } else {
+                $_SESSION['success_message'] = 'Produkti u hoq nga stoku.';
+            }
+
+            // Preserve query string when redirecting back
+            $qs = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
+            $redirect = 'products.php';
+            if ($qs !== '') {
+                $redirect .= '?' . $qs;
+            }
+            header("Location: " . $redirect);
+            exit();
+        } else {
+            $availability_error = 'Database execute error: ' . $conn->error;
+        }
+    } else {
+        $availability_error = 'Database prepare error: ' . $conn->error;
+    }
+}
+
+// Handle sizes toggle from dashboard (set `has_sizes` flag if column exists)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['set_sizes']) && isset($_POST['product_id'])) {
+    // CSRF protection
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        http_response_code(400);
+        die('Invalid CSRF token');
+    }
+    $prod_id = intval($_POST['product_id']);
+    $has_sizes = (isset($_POST['has_sizes']) && $_POST['has_sizes'] === '1') ? 1 : 0;
+
+    // Check if `has_sizes` column exists
+    $colCheck = $conn->query("SHOW COLUMNS FROM products LIKE 'has_sizes'");
+    $useHasSizesCol = $colCheck && $colCheck->num_rows > 0;
+
+    if ($useHasSizesCol) {
+        $updateSql = "UPDATE products SET has_sizes = ? WHERE id = ?";
+    } else {
+        // Column doesn't exist — nothing to update, but avoid error
+        $updateSql = null;
+    }
+
+    if ($updateSql) {
+        $updateStmt = $conn->prepare($updateSql);
+        if ($updateStmt) {
+            $updateStmt->bind_param('ii', $has_sizes, $prod_id);
+            if ($updateStmt->execute()) {
+                if (session_status() === PHP_SESSION_NONE) session_start();
+                if ($has_sizes) {
+                    $_SESSION['success_message'] = 'Sizes enabled for product.';
+                } else {
+                    $_SESSION['success_message'] = 'Sizes disabled for product.';
+                }
+
+                $qs = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
+                $redirect = 'products.php';
+                if ($qs !== '') {
+                    $redirect .= '?' . $qs;
+                }
+                header("Location: " . $redirect);
+                exit();
+            } else {
+                $availability_error = 'Database execute error: ' . $conn->error;
+            }
+        } else {
+            $availability_error = 'Database prepare error: ' . $conn->error;
+        }
+    } else {
+        // Column missing — set session message
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        $_SESSION['success_message'] = 'Kolona has_sizes mungon në bazën e të dhënave.';
+        $qs = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
+        $redirect = 'products.php';
+        if ($qs !== '') {
+            $redirect .= '?' . $qs;
+        }
+        header("Location: " . $redirect);
         exit();
     }
 }
@@ -117,6 +237,19 @@ $products = $result->fetch_all(MYSQLI_ASSOC);
                     ?>
                 </div>
             <?php endif; ?>
+            <?php if (!empty($availability_error)): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <?php echo htmlspecialchars($availability_error); ?>
+                </div>
+            <?php endif; ?>
+            <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
+            <?php if (!empty($_SESSION['success_message'])): ?>
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <?php echo htmlspecialchars($_SESSION['success_message']); unset($_SESSION['success_message']); ?>
+                </div>
+            <?php endif; ?>
 
             <!-- Filters -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
@@ -146,12 +279,12 @@ $products = $result->fetch_all(MYSQLI_ASSOC);
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-gray-50 border-b border-gray-200">
-                            <tr>
+                                <tr>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Produkti</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Çmimi</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Stoku</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Statusi</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Veprime</th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase w-36">Madhesia</th>
+                                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase w-28">Veprime</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -159,14 +292,8 @@ $products = $result->fetch_all(MYSQLI_ASSOC);
                                 <?php foreach($products as $product): ?>
                                     <tr class="hover:bg-gray-50 transition-colors">
                                         <td class="px-6 py-4">
-                                            <div class="flex items-center space-x-3">
-                                                <img src="../<?php echo htmlspecialchars($product['image']); ?>" 
-                                                     alt="<?php echo htmlspecialchars($product['name']); ?>"
-                                                     class="w-12 h-12 object-cover rounded-lg">
-                                                <div>
-                                                    <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($product['name']); ?></div>
-                                                    <div class="text-xs text-gray-500"><?php echo htmlspecialchars(substr($product['description'], 0, 50)); ?>...</div>
-                                                </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($product['name']); ?></div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
@@ -174,32 +301,48 @@ $products = $result->fetch_all(MYSQLI_ASSOC);
                                         </td>
                                         <td class="px-6 py-4">
                                             <?php 
-                                            $stock = $product['stock'] ?? 0;
-                                            $stock_class = $stock < 10 ? 'text-red-600' : 'text-green-600';
+                                            // Prefer explicit available flag if present
+                                            $isAvailable = isset($product['available']) ? ($product['available'] > 0) : (($product['stock'] ?? 0) > 0);
+                                            $switchId = 'avail-' . $product['id'];
                                             ?>
-                                            <span class="text-sm font-medium <?php echo $stock_class; ?>"><?php echo $stock; ?></span>
+                                                                        <form method="POST" class="inline-block">
+                                                                            <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                                                                            <input type="hidden" name="set_availability" value="1">
+                                                                            <input type="hidden" name="available" value="<?php echo $isAvailable ? '1' : '0'; ?>">
+                                                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCSRFToken()); ?>">
+
+                                                <label for="<?php echo $switchId; ?>" class="relative inline-flex items-center cursor-pointer">
+                                                    <input id="<?php echo $switchId; ?>" type="checkbox" class="sr-only peer" <?php echo $isAvailable ? 'checked' : ''; ?> onchange="this.form.elements['available'].value = this.checked ? '1' : '0'; this.form.submit();">
+                                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer-focus:ring-2 peer-focus:ring-green-300 peer-checked:bg-green-400 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                                                </label>
+                                            </form>
                                         </td>
-                                        <td class="px-6 py-4">
-                                            <?php if (($product['stock'] ?? 0) > 0): ?>
-                                                <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                                                    <i class="fas fa-check-circle mr-1"></i>Ne stock
-                                                </span>
-                                            <?php else: ?>
-                                                <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
-                                                    <i class="fas fa-times-circle mr-1"></i>Pa stok
-                                                </span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex space-x-2">
-                                                <a href="edit_product.php?id=<?php echo $product['id']; ?>" 
-                                                   class="text-blue-600 hover:text-blue-900">
-                                                    <i class="fas fa-edit"></i>
+                                                <!-- Sizes control column (switch + quick actions) -->
+                                                <td class="px-6 py-4 text-center">
+                                                    <?php $hasSizes = isset($product['has_sizes']) ? ($product['has_sizes'] > 0) : false; $sizesSwitchId = 'sizes-' . $product['id']; ?>
+                                                    <div class="flex items-center justify-center">
+                                                        <form method="POST" class="inline-block">
+                                                            <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                                                            <input type="hidden" name="set_sizes" value="1">
+                                                            <input type="hidden" name="has_sizes" value="<?php echo $hasSizes ? '1' : '0'; ?>">
+                                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCSRFToken()); ?>">
+
+                                                            <label for="<?php echo $sizesSwitchId; ?>" class="relative inline-flex items-center cursor-pointer">
+                                                                <input id="<?php echo $sizesSwitchId; ?>" type="checkbox" class="sr-only peer" <?php echo $hasSizes ? 'checked' : ''; ?> onchange="this.form.elements['has_sizes'].value = this.checked ? '1' : '0'; this.form.submit();">
+                                                                <div class="w-11 h-6 bg-gray-200 rounded-full peer-focus:ring-2 peer-focus:ring-indigo-300 peer-checked:bg-indigo-500 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                                                            </label>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                        <td class="px-6 py-4 text-right align-middle">
+                                            <div class="flex items-center justify-end space-x-3">
+                                                <a href="edit_product.php?id=<?php echo $product['id']; ?>" class="text-blue-600 hover:text-blue-900 text-sm">
+                                                    <i class="fas fa-edit text-sm"></i>
                                                 </a>
-                                                <a href="?delete=<?php echo $product['id']; ?>&<?php echo http_build_query($_GET); ?>" 
-                                                   class="text-red-600 hover:text-red-900"
+                                                                <a href="?delete=<?php echo $product['id']; ?>&csrf=<?php echo urlencode(generateCSRFToken()); ?>&<?php echo http_build_query($_GET); ?>" 
+                                                   class="text-red-600 hover:text-red-900 text-sm"
                                                    onclick="return confirm('A jeni të sigurt që doni të fshini këtë produkt?')">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fas fa-trash text-sm"></i>
                                                 </a>
                                             </div>
                                         </td>
@@ -222,29 +365,45 @@ $products = $result->fetch_all(MYSQLI_ASSOC);
                     <?php if (!empty($products)): ?>
                         <?php foreach($products as $product): ?>
                             <div class="border-b border-gray-200 p-4 hover:bg-gray-50 transition-colors">
-                                <div class="flex items-start space-x-3">
-                                    <img src="../<?php echo htmlspecialchars($product['image']); ?>" 
-                                         alt="<?php echo htmlspecialchars($product['name']); ?>"
-                                         class="w-16 h-16 object-cover rounded-lg">
-                                    <div class="flex-1 min-w-0">
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                                    <div class="flex-1 pr-4">
                                         <h3 class="text-sm font-semibold text-gray-900 truncate"><?php echo htmlspecialchars($product['name']); ?></h3>
-                                        <p class="text-xs text-gray-500 mt-1 line-clamp-2"><?php echo htmlspecialchars(substr($product['description'], 0, 100)); ?>...</p>
-                                        <div class="mt-2 flex items-center justify-between">
-                                            <span class="text-sm font-semibold text-gray-900"><?php echo number_format($product['price'], 2); ?>€</span>
-                                            <span class="text-xs px-2 py-1 rounded-full 
-                                                <?php echo ($product['stock'] ?? 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-                                                <?php echo ($product['stock'] ?? 0) > 0 ? 'Ne stock' : 'Pa stok'; ?>
-                                            </span>
-                                        </div>
-                                        <div class="mt-3 flex space-x-2">
-                                            <a href="edit_product.php?id=<?php echo $product['id']; ?>" 
-                                               class="text-blue-600 hover:text-blue-900 text-sm">
-                                                <i class="fas fa-edit mr-1"></i>Edit
+                                        <p class="text-sm text-gray-600 mt-1 sm:mt-0"><?php echo number_format($product['price'], 2); ?>€</p>
+                                    </div>
+
+                                    <div class="flex items-center space-x-3 mt-3 sm:mt-0 flex-shrink-0">
+                                        <?php $isAvailableMobile = isset($product['available']) ? ($product['available'] > 0) : (($product['stock'] ?? 0) > 0); $switchIdMobile = 'avail-mobile-' . $product['id']; ?>
+                                            <form method="POST" class="inline-flex items-center">
+                                                <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                                                <input type="hidden" name="set_availability" value="1">
+                                                <input type="hidden" name="available" value="<?php echo $isAvailableMobile ? '1' : '0'; ?>">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCSRFToken()); ?>">
+
+                                            <label for="<?php echo $switchIdMobile; ?>" class="relative inline-flex items-center cursor-pointer">
+                                                <input id="<?php echo $switchIdMobile; ?>" type="checkbox" class="sr-only peer" <?php echo $isAvailableMobile ? 'checked' : ''; ?> onchange="this.form.elements['available'].value = this.checked ? '1' : '0'; this.form.submit();">
+                                                <div class="w-9 h-4 bg-gray-200 rounded-full peer-focus:ring-2 peer-focus:ring-green-300 peer-checked:bg-green-400 relative after:content-[''] after:absolute after:top-0.35 after:left-0.35 after:bg-white after:border after:border-gray-300 after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-full"></div>
+                                            </label>
+                                        </form>
+
+                                        <?php $hasSizesMobile = isset($product['has_sizes']) ? ($product['has_sizes'] > 0) : false; $sizesSwitchIdMobile = 'sizes-mobile-' . $product['id']; ?>
+                                        <form method="POST" class="inline-flex items-center">
+                                            <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                                            <input type="hidden" name="set_sizes" value="1">
+                                            <input type="hidden" name="has_sizes" value="<?php echo $hasSizesMobile ? '1' : '0'; ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCSRFToken()); ?>">
+
+                                            <label for="<?php echo $sizesSwitchIdMobile; ?>" class="relative inline-flex items-center cursor-pointer">
+                                                <input id="<?php echo $sizesSwitchIdMobile; ?>" type="checkbox" class="sr-only peer" <?php echo $hasSizesMobile ? 'checked' : ''; ?> onchange="this.form.elements['has_sizes'].value = this.checked ? '1' : '0'; this.form.submit();">
+                                                <div class="w-9 h-4 bg-gray-200 rounded-full peer-focus:ring-2 peer-focus:ring-indigo-300 peer-checked:bg-indigo-500 relative after:content-[''] after:absolute after:top-0.35 after:left-0.35 after:bg-white after:border after:border-gray-300 after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-full"></div>
+                                            </label>
+                                        </form>
+
+                                        <div class="flex items-center space-x-2 ml-2">
+                                            <a href="edit_product.php?id=<?php echo $product['id']; ?>" class="text-blue-600 hover:text-blue-900 text-sm">
+                                                <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="?delete=<?php echo $product['id']; ?>&<?php echo http_build_query($_GET); ?>" 
-                                               class="text-red-600 hover:text-red-900 text-sm"
-                                               onclick="return confirm('A jeni të sigurt që doni të fshini këtë produkt?')">
-                                                <i class="fas fa-trash mr-1"></i>Fshi
+                                            <a href="?delete=<?php echo $product['id']; ?>&csrf=<?php echo urlencode(generateCSRFToken()); ?>&<?php echo http_build_query($_GET); ?>" class="text-red-600 hover:text-red-900 text-sm" onclick="return confirm('A jeni të sigurt që doni të fshini këtë produkt?')">
+                                                <i class="fas fa-trash"></i>
                                             </a>
                                         </div>
                                     </div>

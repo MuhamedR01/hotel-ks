@@ -1,32 +1,21 @@
 <?php
-session_start();
-require_once '../backend/db.php';
+require_once __DIR__ . '/init.php';
+require_once 'includes/auth_check.php';
+require_once __DIR__ . '/../backend/init.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
-    header('Location: login.php');
-    exit();
-}
-
-// Check if current user is super admin
-$stmt = $conn->prepare("SELECT role FROM admins WHERE id = ?");
-$stmt->bind_param("i", $_SESSION['admin_id']);
-$stmt->execute();
-$result = $stmt->get_result();
-$current_admin = $result->fetch_assoc();
-$is_super_admin = ($current_admin['role'] === 'super_admin');
-
-if (!$is_super_admin) {
-    header('Location: index.php');
-    exit();
-}
-
+$conn = db_connect();
 $current_page = 'settings';
+// Only super_admin
+requireRole(['super_admin']);
 $success_message = '';
 $error_message = '';
 
 // Handle add admin
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_admin'])) {
+    // CSRF protection
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        $error_message = 'Invalid CSRF token. Please refresh and try again.';
+    } else {
     $username = trim($_POST['username']);
     $name = trim($_POST['name']);
     $email = trim($_POST['email']); // Optional now
@@ -52,30 +41,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_admin'])) {
         if ($check_result->num_rows > 0) {
             $error_message = 'Ky emër përdoruesi është i regjistruar tashmë!';
         } else {
-            // Check if email exists (only if email is provided)
-            if (!empty($email)) {
+            // Prepare email to insert: if empty, generate a unique fallback email
+            if (empty($email)) {
+                $base = preg_replace('/[^a-z0-9_.-]/', '', strtolower($username));
+                $candidate = $base . '@hotelks.com';
+                $i = 0;
+                while (true) {
+                    $check_email = $conn->prepare("SELECT id FROM admins WHERE email = ?");
+                    $check_email->bind_param("s", $candidate);
+                    $check_email->execute();
+                    $email_result = $check_email->get_result();
+                    if ($email_result->num_rows == 0) break;
+                    $i++;
+                    $candidate = $base . '+' . $i . '@hotelks.com';
+                }
+                $emailToInsert = $candidate;
+            } else {
+                $emailToInsert = $email;
+                // Check if provided email already exists
                 $check_email = $conn->prepare("SELECT id FROM admins WHERE email = ?");
-                $check_email->bind_param("s", $email);
+                $check_email->bind_param("s", $emailToInsert);
                 $check_email->execute();
                 $email_result = $check_email->get_result();
-                
                 if ($email_result->num_rows > 0) {
                     $error_message = 'Ky email është i regjistruar tashmë!';
                 }
             }
-            
+
             if (empty($error_message)) {
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                
-                // Insert with or without email
-                if (!empty($email)) {
-                    $insert_stmt = $conn->prepare("INSERT INTO admins (username, name, email, password, role, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
-                    $insert_stmt->bind_param("sssss", $username, $name, $email, $hashed_password, $role);
-                } else {
-                    $insert_stmt = $conn->prepare("INSERT INTO admins (username, name, password, role, created_at) VALUES (?, ?, ?, ?, NOW())");
-                    $insert_stmt->bind_param("ssss", $username, $name, $hashed_password, $role);
-                }
-                
+
+                // Always insert email (we generate one if it was not provided)
+                $insert_stmt = $conn->prepare("INSERT INTO admins (username, name, email, password, role, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+                $insert_stmt->bind_param("sssss", $username, $name, $emailToInsert, $hashed_password, $role);
+
                 if ($insert_stmt->execute()) {
                     $success_message = 'Admini u shtua me sukses!';
                 } else {
@@ -86,9 +85,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_admin'])) {
     }
 }
 
-// Handle delete admin
+// Handle delete admin (require CSRF token)
 if (isset($_GET['delete_id'])) {
     $delete_id = intval($_GET['delete_id']);
+    $csrf = $_GET['csrf'] ?? '';
+    if (!validateCSRFToken($csrf)) {
+        $error_message = 'Invalid CSRF token for delete operation.';
+    } else {
     
     // Prevent deleting yourself
     if ($delete_id === $_SESSION['admin_id']) {
@@ -103,11 +106,14 @@ if (isset($_GET['delete_id'])) {
             $error_message = 'Gabim në fshirjen e adminit!';
         }
     }
+    }
 }
 
 // Get all admins
 $admins_query = $conn->query("SELECT id, username, name, email, role, created_at FROM admins ORDER BY created_at DESC");
 $admins = $admins_query->fetch_all(MYSQLI_ASSOC);
+
+}
 
 $role_labels = [
     'super_admin' => 'Super Admin',
@@ -161,6 +167,7 @@ require_once 'includes/sidebar.php';
                         </h3>
                     </div>
                     <form method="POST" class="p-6">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCSRFToken()); ?>">
                         <div class="space-y-4">
                             <div>
                                 <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
@@ -326,7 +333,7 @@ require_once 'includes/sidebar.php';
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo date('Y-m-d H:i', strtotime($admin['created_at'])); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <?php if ($admin['id'] !== $_SESSION['admin_id']): ?>
-                                        <a href="?delete_id=<?php echo $admin['id']; ?>" class="text-red-600 hover:text-red-900" onclick="return confirm('Jeni i sigurt që doni të fshini këtë admin?')">
+                                        <a href="?delete_id=<?php echo $admin['id']; ?>&csrf=<?php echo urlencode(generateCSRFToken()); ?>" class="text-red-600 hover:text-red-900" onclick="return confirm('Jeni i sigurt që doni të fshini këtë admin?')">
                                             <i class="fas fa-trash mr-1"></i>Fshi
                                         </a>
                                         <?php endif; ?>

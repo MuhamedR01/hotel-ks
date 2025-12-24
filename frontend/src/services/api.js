@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost/hotel-ks/backend";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/backend";
 
 export const api = {
   // Products
@@ -50,44 +50,44 @@ export const api = {
   },
 
   register: async (
-  email,
-  password,
-  name,
-  phone = "",
-  address = "",
-  city = "",
-  country = ""
-) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/register.php`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        email,
-        password,
-        name,
-        phone,
-        address,
-        city,
-        country,
-      }),
-    });
+    email,
+    password,
+    name,
+    phone = "",
+    address = "",
+    city = "",
+    country = ""
+  ) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/register.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email,
+          password,
+          name,
+          phone,
+          address,
+          city,
+          country,
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.message || "Registration failed");
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Registration error:", error);
+      throw error;
     }
-
-    return data;
-  } catch (error) {
-    console.error("Registration error:", error);
-    throw error;
-  }
-},
+  },
 
   getProfile: async () => {
     try {

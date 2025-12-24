@@ -1,60 +1,141 @@
-
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useCart } from '../context/CartContext'
-import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 
 const Cart = () => {
-  const navigate = useNavigate()
-  const { cart, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart()
-  const [promoCode, setPromoCode] = useState('')
-  const [discount, setDiscount] = useState(0)
-  const [promoError, setPromoError] = useState('')
+  const PLACEHOLDER_IMAGE =
+    "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+  const navigate = useNavigate();
+  const { cart, removeFromCart, updateQuantity, getCartTotal, clearCart } =
+    useCart();
+  const [fetchedImages, setFetchedImages] = useState({});
+  const [promoCode, setPromoCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [promoError, setPromoError] = useState("");
 
-  const subtotal = getCartTotal()
-  const shipping = subtotal > 100 ? 0 : 10
-  const tax = subtotal * 0.08 // 8% tax
-  const total = subtotal + shipping + tax - discount
+  const subtotal = getCartTotal();
+
+  const normalizeCountry = (country) => {
+    if (!country) return "";
+    const cleaned = country
+      .toString()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (cleaned.includes("kosov")) return "kosovo";
+    if (cleaned.includes("alban")) return "albania";
+    if (cleaned.includes("maced") || cleaned.includes("maqed"))
+      return "north macedonia";
+    return cleaned;
+  };
+
+  const calculateShipping = (country, subtotal) => {
+    const normalized = normalizeCountry(country || "");
+
+    if (normalized === "kosovo") {
+      return 2.0;
+    }
+
+    if (normalized === "albania" || normalized === "north macedonia") {
+      return 5.0;
+    }
+
+    return 5.0;
+  };
+
+  const { user } = useAuth();
+  const userCountry = user?.country || "";
+  const hasShipping = !!user && userCountry.toString().trim() !== "";
+  const shipping = hasShipping
+    ? calculateShipping(userCountry, subtotal)
+    : null;
+  const tax = 0;
+  const total = subtotal + (shipping || 0) - discount;
 
   const handleQuantityChange = (itemId, newQuantity, selectedSize) => {
-    if (newQuantity < 1) return
-    updateQuantity(itemId, newQuantity, selectedSize)
-  }
+    if (newQuantity < 1) return;
+    updateQuantity(itemId, selectedSize, newQuantity);
+  };
 
   const handleRemoveItem = (productId, selectedSize) => {
-    if (window.confirm('Jeni të sigurt që dëshironi të hiqni këtë produkt nga shporta?')) {
-      removeFromCart(productId, selectedSize)
+    if (
+      window.confirm(
+        "Jeni të sigurt që dëshironi të hiqni këtë produkt nga shporta?"
+      )
+    ) {
+      removeFromCart(productId, selectedSize);
     }
-  }
+  };
 
   const handleClearCart = () => {
-    if (window.confirm('Jeni të sigurt që dëshironi të zbrazni shportën?')) {
-      clearCart()
+    if (window.confirm("Jeni të sigurt që dëshironi të zbrazni shportën?")) {
+      clearCart();
     }
-  }
+  };
 
   const handleApplyPromo = () => {
-    setPromoError('')
+    setPromoError("");
     // Mock promo codes
     const promoCodes = {
-      'SAVE10': 10,
-      'SAVE20': 20,
-      'WELCOME': 15
-    }
+      SAVE10: 10,
+      SAVE20: 20,
+      WELCOME: 15,
+    };
 
     if (promoCodes[promoCode.toUpperCase()]) {
-      setDiscount(promoCodes[promoCode.toUpperCase()])
-      setPromoError('')
+      setDiscount(promoCodes[promoCode.toUpperCase()]);
+      setPromoError("");
     } else if (promoCode) {
-      setPromoError('Kodi promocional i pavlefshëm')
-      setDiscount(0)
+      setPromoError("Kodi promocional i pavlefshëm");
+      setDiscount(0);
     }
-  }
+  };
 
   const handleCheckout = () => {
-    if (cart.length === 0) return
-    navigate('/checkout')
-  }
+    if (cart.length === 0) return;
+    navigate("/checkout");
+  };
+
+  // Fetch product images for items that don't have an image stored (avoid storing base64 in localStorage)
+  useEffect(() => {
+    let active = true;
+
+    const toFetch = cart.filter((item) => !item.image);
+    if (toFetch.length === 0) return;
+
+    toFetch.forEach((item) => {
+      const key = `${item.id}-${item.selectedSize || "no-size"}`;
+      // avoid refetching
+      if (fetchedImages[key]) return;
+
+      const base = import.meta.env.VITE_API_BASE_URL || "/backend";
+      fetch(`${base}/get_product.php?id=${item.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!active) return;
+          if (data && data.success && data.product) {
+            const img =
+              data.product.image ||
+              (data.product.images && data.product.images[0]) ||
+              null;
+            setFetchedImages((prev) => ({ ...prev, [key]: img }));
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to fetch product image for", item.id, err);
+        });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [cart, fetchedImages]);
 
   if (cart.length === 0) {
     return (
@@ -62,8 +143,12 @@ const Cart = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto text-center">
             <ShoppingBag className="w-24 h-24 mx-auto text-gray-400 mb-6" />
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Shporta është bosh</h2>
-            <p className="text-gray-600 mb-8">Nuk keni shtuar asnjë produkt në shportë ende.</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Shporta është bosh
+            </h2>
+            <p className="text-gray-600 mb-8">
+              Nuk keni shtuar asnjë produkt në shportë ende.
+            </p>
             <Link
               to="/products"
               className="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
@@ -73,7 +158,7 @@ const Cart = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -81,8 +166,13 @@ const Cart = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Shporta e Blerjeve</h1>
-          <p className="text-gray-600 mt-2">{cart.length} {cart.length === 1 ? 'artikull' : 'artikuj'} në shportën tuaj</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Shporta e Blerjeve
+          </h1>
+          <p className="text-gray-600 mt-2">
+            {cart.length} {cart.length === 1 ? "artikull" : "artikuj"} në
+            shportën tuaj
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -117,46 +207,97 @@ const Cart = () => {
                   <tbody className="divide-y divide-gray-200">
                     {cart.map((item) => {
                       // Create unique key combining product id and size
-                      const itemKey = `${item.id}-${item.selectedSize || 'no-size'}`
-                      
+                      const itemKey = `${item.id}-${
+                        item.selectedSize || "no-size"
+                      }`;
+                      const displayImage =
+                        item.image ||
+                        fetchedImages[itemKey] ||
+                        PLACEHOLDER_IMAGE;
                       return (
-                        <tr key={itemKey} className="hover:bg-gray-50 transition-colors">
+                        <tr
+                          key={itemKey}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
                           <td className="px-6 py-4">
                             <div className="flex items-center space-x-4">
                               <img
-                                src={item.image || 'https://via.placeholder.com/100x100?text=No+Image'}
+                                src={displayImage}
                                 alt={item.name}
                                 className="w-20 h-20 object-cover rounded-lg"
                                 onError={(e) => {
-                                  e.target.src = 'https://via.placeholder.com/100x100?text=No+Image'
+                                  e.target.onerror = null;
+                                  e.target.src = PLACEHOLDER_IMAGE;
                                 }}
                               />
                               <div>
-                                <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                                <p className="text-sm text-gray-500 line-clamp-1">{item.description}</p>
+                                <h3 className="font-semibold text-gray-900">
+                                  {item.name}
+                                </h3>
+                                <p className="text-sm text-gray-500 line-clamp-1">
+                                  {item.description}
+                                </p>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4">
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
-                              {item.selectedSize || 'N/A'}
+                              {(() => {
+                                if (
+                                  !item.selectedSize &&
+                                  item.selectedSize !== 0
+                                )
+                                  return "N/A";
+                                if (
+                                  typeof item.selectedSize === "string" ||
+                                  typeof item.selectedSize === "number"
+                                )
+                                  return String(item.selectedSize);
+                                if (
+                                  item.selectedSize &&
+                                  typeof item.selectedSize === "object"
+                                ) {
+                                  return (
+                                    item.selectedSize.size ||
+                                    item.selectedSize.label ||
+                                    "N/A"
+                                  );
+                                }
+                                return "N/A";
+                              })()}
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="font-semibold text-gray-900">€{parseFloat(item.price).toFixed(2)}</span>
+                            <span className="font-semibold text-gray-900">
+                              €{parseFloat(item.price).toFixed(2)}
+                            </span>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center space-x-2">
                               <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.selectedSize)}
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    item.id,
+                                    item.quantity - 1,
+                                    item.selectedSize
+                                  )
+                                }
                                 className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
                                 disabled={item.quantity <= 1}
                               >
                                 <Minus className="w-4 h-4" />
                               </button>
-                              <span className="w-12 text-center font-semibold">{item.quantity}</span>
+                              <span className="w-12 text-center font-semibold">
+                                {item.quantity}
+                              </span>
                               <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity + 1, item.selectedSize)}
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    item.id,
+                                    item.quantity + 1,
+                                    item.selectedSize
+                                  )
+                                }
                                 className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
                               >
                                 <Plus className="w-4 h-4" />
@@ -164,11 +305,15 @@ const Cart = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="font-bold text-gray-900">€{(item.price * item.quantity).toFixed(2)}</span>
+                            <span className="font-bold text-gray-900">
+                              €{(item.price * item.quantity).toFixed(2)}
+                            </span>
                           </td>
                           <td className="px-6 py-4">
                             <button
-                              onClick={() => handleRemoveItem(item.id, item.selectedSize)}
+                              onClick={() =>
+                                handleRemoveItem(item.id, item.selectedSize)
+                              }
                               className="text-red-600 hover:text-red-800 transition-colors"
                               title="Hiq nga shporta"
                             >
@@ -176,7 +321,7 @@ const Cart = () => {
                             </button>
                           </td>
                         </tr>
-                      )
+                      );
                     })}
                   </tbody>
                 </table>
@@ -185,53 +330,103 @@ const Cart = () => {
               {/* Mobile View */}
               <div className="md:hidden space-y-4">
                 {cart.map((item) => {
-                  const itemKey = `${item.id}-${item.selectedSize || 'no-size'}`
-                  
+                  const itemKey = `${item.id}-${
+                    item.selectedSize || "no-size"
+                  }`;
+                  const displayImage =
+                    item.image || fetchedImages[itemKey] || PLACEHOLDER_IMAGE;
                   return (
                     <div key={itemKey} className="p-4 border-b border-gray-200">
                       <div className="flex space-x-4 mb-4">
                         <img
-                          src={item.image || 'https://via.placeholder.com/100x100?text=No+Image'}
+                          src={displayImage}
                           alt={item.name}
                           className="w-24 h-24 object-cover rounded-lg"
                           onError={(e) => {
-                            e.target.src = 'https://via.placeholder.com/100x100?text=No+Image'
+                            e.target.onerror = null;
+                            e.target.src = PLACEHOLDER_IMAGE;
                           }}
                         />
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-1">{item.name}</h3>
+                          <h3 className="font-semibold text-gray-900 mb-1">
+                            {item.name}
+                          </h3>
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm text-gray-600">Madhësia:</span>
+                            <span className="text-sm text-gray-600">
+                              Madhësia:
+                            </span>
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                              {item.selectedSize || 'N/A'}
+                              {(() => {
+                                if (
+                                  !item.selectedSize &&
+                                  item.selectedSize !== 0
+                                )
+                                  return "N/A";
+                                if (
+                                  typeof item.selectedSize === "string" ||
+                                  typeof item.selectedSize === "number"
+                                )
+                                  return String(item.selectedSize);
+                                if (
+                                  item.selectedSize &&
+                                  typeof item.selectedSize === "object"
+                                ) {
+                                  return (
+                                    item.selectedSize.size ||
+                                    item.selectedSize.label ||
+                                    "N/A"
+                                  );
+                                }
+                                return "N/A";
+                              })()}
                             </span>
                           </div>
-                          <p className="text-lg font-bold text-blue-600">€{parseFloat(item.price).toFixed(2)}</p>
+                          <p className="text-lg font-bold text-blue-600">
+                            €{parseFloat(item.price).toFixed(2)}
+                          </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div className="flex items-center space-x-3">
                           <button
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.selectedSize)}
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.id,
+                                item.quantity - 1,
+                                item.selectedSize
+                              )
+                            }
                             className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
                             disabled={item.quantity <= 1}
                           >
                             <Minus className="w-4 h-4" />
                           </button>
-                          <span className="w-12 text-center font-semibold">{item.quantity}</span>
+                          <span className="w-12 text-center font-semibold">
+                            {item.quantity}
+                          </span>
                           <button
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1, item.selectedSize)}
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.id,
+                                item.quantity + 1,
+                                item.selectedSize
+                              )
+                            }
                             className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
                           >
                             <Plus className="w-4 h-4" />
                           </button>
                         </div>
-                        
+
                         <div className="flex items-center space-x-4">
-                          <span className="font-bold text-gray-900">€{(item.price * item.quantity).toFixed(2)}</span>
+                          <span className="font-bold text-gray-900">
+                            €{(item.price * item.quantity).toFixed(2)}
+                          </span>
                           <button
-                            onClick={() => handleRemoveItem(item.id, item.selectedSize)}
+                            onClick={() =>
+                              handleRemoveItem(item.id, item.selectedSize)
+                            }
                             className="text-red-600 hover:text-red-800 transition-colors p-2"
                           >
                             <Trash2 className="w-5 h-5" />
@@ -239,7 +434,7 @@ const Cart = () => {
                         </div>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
 
@@ -258,7 +453,9 @@ const Cart = () => {
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Përmbledhje e Porosisë</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Përmbledhje e Porosisë
+              </h2>
 
               {/* Promo Code */}
               <div className="mb-6">
@@ -284,7 +481,9 @@ const Cart = () => {
                   <p className="text-red-600 text-sm mt-1">{promoError}</p>
                 )}
                 {discount > 0 && (
-                  <p className="text-green-600 text-sm mt-1">Kodi promocional u aplikua! -€{discount.toFixed(2)}</p>
+                  <p className="text-green-600 text-sm mt-1">
+                    Kodi promocional u aplikua! -€{discount.toFixed(2)}
+                  </p>
                 )}
               </div>
 
@@ -296,11 +495,17 @@ const Cart = () => {
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Dërgesa</span>
-                  <span>{shipping === 0 ? 'FALAS' : `€${shipping.toFixed(2)}`}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Taksa (8%)</span>
-                  <span>€{tax.toFixed(2)}</span>
+                  <span>
+                    {shipping === null ? (
+                      <Link to="/checkout" className="text-blue-600 underline">
+                        Do të llogaritet në përfundim
+                      </Link>
+                    ) : shipping === 0 ? (
+                      "FALAS"
+                    ) : (
+                      `€${shipping.toFixed(2)}`
+                    )}
+                  </span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600">
@@ -311,19 +516,20 @@ const Cart = () => {
                 <div className="border-t border-gray-200 pt-3">
                   <div className="flex justify-between text-lg font-bold text-gray-900">
                     <span>Totali</span>
-                    <span>€{total.toFixed(2)}</span>
+                    <span>
+                      €{(subtotal + (shipping || 0) - discount).toFixed(2)}
+                    </span>
                   </div>
+                  {shipping === null && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      Dërgesa do të kalkulohet në faqen e përfundimit të
+                      porosisë.
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Free Shipping Notice */}
-              {subtotal < 100 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-blue-800">
-                    Shtoni €{(100 - subtotal).toFixed(2)} më shumë për dërgim falas!
-                  </p>
-                </div>
-              )}
+              {/* Free shipping incentive removed per request */}
 
               {/* Checkout Button */}
               <button
@@ -344,9 +550,39 @@ const Cart = () => {
               {/* Security Badges */}
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="flex items-center justify-center gap-4 text-gray-500">
-                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
-                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
-                  <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+                  <svg
+                    className="w-8 h-8"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <svg
+                    className="w-8 h-8"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <svg
+                    className="w-8 h-8"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -354,7 +590,7 @@ const Cart = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Cart
+export default Cart;

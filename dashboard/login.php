@@ -1,5 +1,8 @@
 <?php
-session_start();
+require_once __DIR__ . '/init.php';
+require_once __DIR__ . '/../backend/init.php';
+
+$conn = db_connect();
 
 // Set session timeout (30 minutes)
 $timeout_duration = 1800;
@@ -21,8 +24,6 @@ if (isset($_SESSION['admin_logged']) && $_SESSION['admin_logged'] === true) {
     header('Location: index.php');
     exit();
 }
-
-require_once '../backend/db.php';
 
 $err = '';
 $success = '';
@@ -263,16 +264,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <i class="fas fa-sign-in-alt mr-2"></i> Kyçu
                 </button>
             </form>
-
-            <!-- Default Credentials Info -->
-            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                <p class="text-sm text-blue-800">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    <strong>Kredencialet e paracaktuara:</strong><br>
-                    <span class="ml-5">Përdoruesi: <code class="bg-blue-100 px-2 py-0.5 rounded">admin</code></span><br>
-                    <span class="ml-5">Fjalëkalimi: <code class="bg-blue-100 px-2 py-0.5 rounded">admin123</code></span>
-                </p>
-            </div>
 
             <!-- Back to Site -->
             <div class="mt-6 text-center">

@@ -1,13 +1,51 @@
 <?php
-session_start();
-if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
-    header('Location: login.php');
+$requireInit = false;
+require_once __DIR__ . '/init.php';
+require_once 'includes/auth_check.php';
+require_once __DIR__ . '/../backend/init.php';
+require_once 'config.php';
+require_once __DIR__ . '/includes/image_helper.php';
+
+// Enable debug display when DASHBOARD_DEBUG is true
+if (defined('DASHBOARD_DEBUG') && DASHBOARD_DEBUG) {
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
+    error_reporting(E_ALL);
+}
+
+// Initialize DB connection once, with a clear diagnostic on failure
+try {
+    $conn = db_connect();
+} catch (Throwable $e) {
+    // Show a readable error in the browser for debugging (temporary)
+    http_response_code(500);
+    echo "<pre style=\"white-space:pre-wrap;color:#900;background:#fff;padding:16px;border-radius:6px;\">";
+    echo "Dashboard startup error:\n\n" . htmlspecialchars($e->getMessage()) . "\n\n";
+    echo htmlspecialchars($e->getTraceAsString());
+    echo "</pre>";
     exit();
 }
 
-require_once '../backend/db.php';
-require_once 'config.php';
-require_once __DIR__ . '/includes/image_helper.php';
+// Role-based redirect: only super_admin should access dashboard
+$raw_role = $_SESSION['admin_role'] ?? 'admin';
+$raw_role = strtolower(trim($raw_role));
+$raw_role = str_replace([' ', '-'], '_', $raw_role);
+if (in_array($raw_role, ['admin', 'superadmin', 'super_admin'])) {
+    $role = 'super_admin';
+} elseif ($raw_role === 'manager') {
+    $role = 'manager';
+} elseif ($raw_role === 'worker') {
+    $role = 'worker';
+} else {
+    $role = 'super_admin';
+}
+
+if ($role !== 'super_admin') {
+    // Redirect manager -> products, worker -> orders
+    $landing = ($role === 'manager') ? 'products.php' : 'orders.php';
+    header('Location: ' . $landing);
+    exit();
+}
 
 $current_page = 'index';
 $page_title = 'Dashboard';
@@ -41,11 +79,11 @@ if ($table_check && $table_check->num_rows > 0) {
         $stats['total_orders'] = $result->fetch_assoc()['count'];
     }
 
-    // Total Revenue
-    $result = $conn->query("SELECT SUM(total_amount) as total FROM orders WHERE status = 'completed'");
+    // Total Revenue - sum only completed orders
+    $result = $conn->query("SELECT SUM(COALESCE(total_amount,0)) as total FROM orders WHERE status = 'completed'");
     if ($result) {
         $row = $result->fetch_assoc();
-        $stats['total_revenue'] = $row['total'] ?? 0;
+        $stats['total_revenue'] = $row['total'] !== null ? (float)$row['total'] : 0;
     }
 
     // Pending Orders
@@ -55,20 +93,26 @@ if ($table_check && $table_check->num_rows > 0) {
     }
 }
 
-// Check if users table exists and has role column
-$table_check = $conn->query("SHOW TABLES LIKE 'users'");
-if ($table_check && $table_check->num_rows > 0) {
-    // Check if role column exists
-    $column_check = $conn->query("SHOW COLUMNS FROM users LIKE 'role'");
-    if ($column_check && $column_check->num_rows > 0) {
-        $result = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'customer'");
-    } else {
-        // If no role column, count all users
-        $result = $conn->query("SELECT COUNT(*) as count FROM users");
+// Check if users table exists and has role column (guard against missing table)
+try {
+    $table_check = $conn->query("SHOW TABLES LIKE 'users'");
+    if ($table_check && $table_check->num_rows > 0) {
+        // Check if role column exists
+        $column_check = $conn->query("SHOW COLUMNS FROM users LIKE 'role'");
+        if ($column_check && $column_check->num_rows > 0) {
+            $result = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'customer'");
+        } else {
+            // If no role column, count all users
+            $result = $conn->query("SELECT COUNT(*) as count FROM users");
+        }
+        if ($result) {
+            $stats['total_customers'] = $result->fetch_assoc()['count'];
+        }
     }
-    if ($result) {
-        $stats['total_customers'] = $result->fetch_assoc()['count'];
-    }
+} catch (mysqli_sql_exception $e) {
+    // If the users table is missing or another DB error occurs, log and continue without fatal error.
+    error_log('dashboard/index.php: users table query failed: ' . $e->getMessage());
+    $stats['total_customers'] = 0;
 }
 
 // Check if stock column exists in products
@@ -84,14 +128,29 @@ if ($column_check && $column_check->num_rows > 0) {
 $recent_orders = [];
 $table_check = $conn->query("SHOW TABLES LIKE 'orders'");
 if ($table_check && $table_check->num_rows > 0) {
-    $result = $conn->query("SELECT o.*, COALESCE(u.name, o.customer_name, 'Guest') as customer_name 
-                           FROM orders o 
-                           LEFT JOIN users u ON o.user_id = u.id 
-                           ORDER BY o.created_at DESC LIMIT 5");
-    if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $recent_orders[] = $row;
+    // Check if users table exists before joining
+    $users_table_check = $conn->query("SHOW TABLES LIKE 'users'");
+    $has_users_table = $users_table_check && $users_table_check->num_rows > 0;
+    
+    try {
+        if ($has_users_table) {
+            $result = $conn->query("SELECT o.*, COALESCE(u.name, o.customer_name, 'Guest') as customer_name 
+                                   FROM orders o 
+                                   LEFT JOIN users u ON o.user_id = u.id 
+                                   ORDER BY o.created_at DESC LIMIT 5");
+        } else {
+            // Fallback query without users table
+            $result = $conn->query("SELECT o.*, COALESCE(o.customer_name, 'Guest') as customer_name 
+                                   FROM orders o 
+                                   ORDER BY o.created_at DESC LIMIT 5");
         }
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $recent_orders[] = $row;
+            }
+        }
+    } catch (mysqli_sql_exception $e) {
+        error_log('dashboard/index.php: recent orders query failed: ' . $e->getMessage());
     }
 }
 
