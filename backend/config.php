@@ -5,9 +5,9 @@
 // MySQL / MariaDB
 // Update the password below with the production DB password on the server.
 define('DB_HOST', 'localhost');
-define('DB_USER', 'u408888301_hotelks');
+define('DB_USER', '');
 define('DB_PASS', '');
-define('DB_NAME', 'u408888301_hotelks');
+define('DB_NAME', '');
 
 // CORS: set to the production frontend origin (update if needed)
 define('ALLOWED_ORIGIN', 'https://hotel-ks.com');
