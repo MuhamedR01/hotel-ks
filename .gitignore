@@ -1,61 +1,10 @@
-# ──────────────────────────────────────────────
-#  Environment & secrets (NEVER commit these)
-# ──────────────────────────────────────────────
-.env
-.env.*
-!.env.example
-*.key
-*.pem
+# Ignore VS Code SFTP config with credentials
+.vscode/sftp.json
 
-# ──────────────────────────────────────────────
-#  IDE / editor
-# ──────────────────────────────────────────────
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-.DS_Store
-Thumbs.db
+# Node / build
+frontend/dist
+frontend/node_modules
 
-# ──────────────────────────────────────────────
-#  Logs
-# ──────────────────────────────────────────────
+# Other
 *.log
-npm-debug.log*
-
-# ──────────────────────────────────────────────
-#  Node / Frontend build
-# ──────────────────────────────────────────────
-frontend/node_modules/
-frontend/dist/
-
-# ──────────────────────────────────────────────
-#  Laravel backend
-# ──────────────────────────────────────────────
-laravel-backend/vendor/
-laravel-backend/node_modules/
-laravel-backend/storage/*.key
-laravel-backend/.phpunit.result.cache
-laravel-backend/.phpunit.cache/
-
-# ──────────────────────────────────────────────
-#  Legacy PHP configs with credentials
-# ──────────────────────────────────────────────
-backend/config.local.php
-backend/config.production.php
-dashboard/config.php
-
-# ──────────────────────────────────────────────
-#  Deployment docs (keep private)
-# ──────────────────────────────────────────────
-DEPLOY.md
-
-# ──────────────────────────────────────────────
-#  OS / misc
-# ──────────────────────────────────────────────
-*.bak
-*.tmp
-*.swp
+.env
