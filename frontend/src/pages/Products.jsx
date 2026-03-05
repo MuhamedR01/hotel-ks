@@ -81,8 +81,8 @@ function Products() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
+        <div className="text-center w-full">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4 mx-auto"></div>
           <p className="text-xl text-gray-600">Duke ngarkuar produktet...</p>
         </div>
       </div>

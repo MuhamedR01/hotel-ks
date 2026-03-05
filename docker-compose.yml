@@ -1,0 +1,98 @@
+# ──────────────────────────────────────────────────────────────
+#  Hotel KS — Docker Compose (Coolify-ready)
+# ──────────────────────────────────────────────────────────────
+#
+#  Usage:
+#    docker compose up -d --build
+#
+#  Environment variables (set in Coolify or .env):
+#    DB_DATABASE, DB_USERNAME, DB_PASSWORD, APP_KEY, APP_URL,
+#    ADMIN_DEFAULT_PASSWORD, FRONTEND_URL
+# ──────────────────────────────────────────────────────────────
+
+services:
+  # ── MySQL Database ───────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-hotel_ks}
+      MYSQL_USER: ${DB_USERNAME:-hotel_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - hotel-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${DB_ROOT_PASSWORD:-rootsecret}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Laravel Backend (PHP-FPM + Nginx) ───────────────────────
+  backend:
+    build:
+      context: ./laravel-backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      APP_NAME: "Hotel KS"
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY}
+      APP_URL: ${APP_URL:-http://localhost}
+      APP_LOCALE: sq
+
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-hotel_ks}
+      DB_USERNAME: ${DB_USERNAME:-hotel_user}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+
+      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-HotelKS@2024!Secure}
+    networks:
+      - hotel-network
+
+  # ── React Frontend (Nginx static) ───────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${APP_PORT:-80}:80"
+    networks:
+      - hotel-network
+
+volumes:
+  mysql_data:
+
+networks:
+  hotel-network:
+    driver: bridge

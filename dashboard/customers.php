@@ -3,9 +3,13 @@ $current_page = 'customers';
 require_once 'includes/auth_check.php';
 // Only super_admin can view customers
 requireRole(['super_admin']);
+
+// Use the centralized backend DB helper so schema matches the rest of the app
+require_once __DIR__ . '/../backend/init.php';
+$conn = db_connect();
+
 require_once 'includes/header.php';
 require_once 'includes/sidebar.php';
-require_once 'db.php';
 
 // Pagination settings
 $items_per_page = 10;

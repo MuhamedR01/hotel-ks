@@ -64,7 +64,8 @@ $stmt->bind_param(
 );
 
 if ($stmt->execute()) {
-    $order_id = $stmt->insert_id;
+    // Use the connection's insert_id to get the last auto-increment value
+    $order_id = $conn->insert_id;
     
     // Insert order items
     $item_stmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");

@@ -185,34 +185,51 @@ function Checkout() {
         payment_method: "cash",
         notes: formData.notes || "",
         items: cart.map((item) => ({
-          product_id: item.id,
-          product_name: item.name,
-          quantity: item.quantity,
-          price: item.price,
+          product_id: Number(item.id),
+          product_name: item.name || "",
+          quantity: Number(item.quantity) || 0,
+          price: parseFloat(item.price) || 0,
           selected_size: item.selectedSize || null,
         })),
       };
 
       console.log("Sending order data:", orderData);
 
-      const response = await fetch(
-        "http://localhost/hotel-ks/backend/create_order.php",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(orderData),
-        }
+      // Client-side validation of items to avoid backend rejection
+      const invalidItems = orderData.items.filter(
+        (it) =>
+          !it.product_id || !Number.isFinite(it.price) || it.quantity <= 0,
       );
+      if (invalidItems.length > 0) {
+        console.error("Invalid items detected before sending:", invalidItems);
+        // Build a helpful error message listing problematic items (name and id)
+        const details = invalidItems
+          .map(
+            (it) => `${it.product_name || "(no name)"} (id: ${it.product_id})`,
+          )
+          .join(", ");
+        const msg = `Some items in your cart are missing required information (id, price, or quantity): ${details}. Please review your cart.`;
+        setError(msg);
+        throw new Error(msg);
+      }
+
+      const base = import.meta.env.VITE_API_BASE_URL || "/api";
+
+      const response = await fetch(`${base}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(orderData),
+      });
 
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text();
         console.error("Non-JSON response:", text);
         throw new Error(
-          "Server returned an invalid response. Please check the backend logs."
+          "Server returned an invalid response. Please check the backend logs.",
         );
       }
 
@@ -255,7 +272,7 @@ function Checkout() {
       console.error("Order error:", err);
       setError(
         err.message ||
-          "Ndodhi një gabim gjatë krijimit të porosisë. Ju lutem provoni përsëri."
+          "Ndodhi një gabim gjatë krijimit të porosisë. Ju lutem provoni përsëri.",
       );
     } finally {
       setLoading(false);

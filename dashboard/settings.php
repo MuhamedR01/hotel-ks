@@ -111,7 +111,12 @@ if (isset($_GET['delete_id'])) {
 
 // Get all admins
 $admins_query = $conn->query("SELECT id, username, name, email, role, created_at FROM admins ORDER BY created_at DESC");
-$admins = $admins_query->fetch_all(MYSQLI_ASSOC);
+if ($admins_query === false) {
+    $error_message = 'Gabim në marrjen e administratorëve: ' . $conn->error;
+    $admins = [];
+} else {
+    $admins = $admins_query->fetch_all(MYSQLI_ASSOC);
+}
 
 }
 
@@ -326,8 +331,13 @@ require_once 'includes/sidebar.php';
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo htmlspecialchars($admin['name']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo htmlspecialchars($admin['email']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $role_colors[$admin['role']]; ?>">
-                                            <?php echo $role_labels[$admin['role']]; ?>
+                                        <?php
+                                            $r = $admin['role'] ?? 'worker';
+                                            $label = $role_labels[$r] ?? ucfirst(str_replace('_', ' ', $r));
+                                            $color = $role_colors[$r] ?? 'bg-gray-100 text-gray-800';
+                                        ?>
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $color; ?>">
+                                            <?php echo htmlspecialchars($label); ?>
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo date('Y-m-d H:i', strtotime($admin['created_at'])); ?></td>

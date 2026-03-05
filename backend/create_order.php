@@ -1,6 +1,10 @@
 
 <?php
 require_once 'init.php';
+
+// Ensure we always return clean JSON and capture any stray output (warnings/notices)
+ob_start();
+header('Content-Type: application/json; charset=utf-8');
 // Use db_connect() to get a connection
 // $conn will be created later where needed
 
@@ -144,9 +148,10 @@ try {
         }
 
         foreach ($data['items'] as $item) {
-            if (empty($item['product_id']) || !isset($item['quantity']) || !isset($item['price'])) {
-                throw new Exception('Invalid item data');
-            }
+                // Validate item fields: allow product_id == 0 (valid), but require it to be set and numeric
+                if (!isset($item['product_id']) || $item['product_id'] === '' || !is_numeric($item['product_id']) || !isset($item['quantity']) || !isset($item['price'])) {
+                    throw new Exception('Invalid item data');
+                }
 
             $product_name = $item['product_name'] ?? '';
             $product_price = floatval($item['price']);
@@ -197,6 +202,12 @@ try {
     $stmt->close();
     $conn->commit();
 
+    // Capture any stray output and log it for diagnostics
+    $buf = ob_get_clean();
+    if (trim($buf) !== '') {
+        error_log('create_order.php stray output before JSON: ' . $buf);
+    }
+
     echo json_encode([
         'success' => true,
         'message' => 'Order created successfully',
@@ -208,7 +219,16 @@ try {
     if (isset($conn)) {
         $conn->rollback();
     }
-    
+
+    // Capture and log any buffered output that may corrupt JSON
+    $buf = '';
+    if (ob_get_length() !== false) {
+        $buf = ob_get_clean();
+        if (trim($buf) !== '') {
+            error_log('create_order.php stray output in exception: ' . $buf);
+        }
+    }
+
     http_response_code(400);
     echo json_encode([
         'success' => false,

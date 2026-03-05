@@ -17,8 +17,8 @@ export const CartProvider = ({ children }) => {
       try {
         const parsedCart = JSON.parse(savedCart);
         // Sanitize any legacy items that may contain large base64 blobs
-        const sanitized = (Array.isArray(parsedCart) ? parsedCart : []).map(
-          (item) => {
+        const sanitized = (Array.isArray(parsedCart) ? parsedCart : [])
+          .map((item) => {
             const imageVal =
               typeof item?.image === "string" ? item.image : null;
             const imageToStore =
@@ -27,21 +27,34 @@ export const CartProvider = ({ children }) => {
               imageVal.startsWith("data:")
                 ? null
                 : imageVal;
+
+            const idNum = Number(item?.id) || 0;
+            const priceNum = parseFloat(item?.price) || 0;
+            const qtyNum = Number(item?.quantity) || 1;
+
             return {
-              id: item.id,
-              name: item.name,
-              price: item.price,
+              id: idNum,
+              name: item?.name || "",
+              price: priceNum,
               image: imageToStore,
-              description: item.description
+              description: item?.description
                 ? String(item.description).slice(0, 200)
                 : "",
-              selectedSize: item.selectedSize
+              selectedSize: item?.selectedSize
                 ? String(item.selectedSize)
                 : null,
-              quantity: Number(item.quantity) || 1,
+              quantity: qtyNum,
             };
-          }
-        );
+          })
+          // Filter out obviously invalid legacy items (id must be an integer >= 0, price finite, quantity >=1)
+          .filter(
+            (it) =>
+              Number.isInteger(it.id) &&
+              it.id >= 0 &&
+              Number.isFinite(it.price) &&
+              it.quantity >= 1
+          );
+
         return sanitized;
       } catch (error) {
         console.error("Error parsing cart:", error);
@@ -78,14 +91,23 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product, selectedSize = null) => {
     console.log("Adding to cart:", { id: product?.id, selectedSize }); // Debug log (sanitized)
 
+    const prodId = Number(product?.id);
+    if (!Number.isInteger(prodId) || prodId < 0) {
+      console.error("addToCart called with invalid product id:", product);
+      return; // ignore invalid product additions
+    }
+
     setCart((prevCart) => {
       // Check if item with same product id and size already exists
       const existingItemIndex = prevCart.findIndex((item) => {
-        // Both must match: product ID and size (or both have no size)
+        // Both must match: normalized product ID and size (or both have no size)
         if (selectedSize) {
-          return item.id === product.id && item.selectedSize === selectedSize;
+          return (
+            item.id === prodId &&
+            String(item.selectedSize) === String(selectedSize)
+          );
         } else {
-          return item.id === product.id && !item.selectedSize;
+          return item.id === prodId && !item.selectedSize;
         }
       });
 
@@ -95,7 +117,8 @@ export const CartProvider = ({ children }) => {
         updatedCart[existingItemIndex] = {
           ...updatedCart[existingItemIndex],
           quantity:
-            updatedCart[existingItemIndex].quantity + (product.quantity || 1),
+            updatedCart[existingItemIndex].quantity +
+            (Number(product.quantity) || 1),
         };
         console.log("Updated existing item:", updatedCart[existingItemIndex]); // Debug log
         return updatedCart;
@@ -113,15 +136,15 @@ export const CartProvider = ({ children }) => {
             : imageVal;
 
         const newItem = {
-          id: product.id,
-          name: product.name,
-          price: product.price,
+          id: prodId,
+          name: product.name || "",
+          price: parseFloat(product.price) || 0,
           image: imageToStore,
           description: product.description
             ? String(product.description).slice(0, 200)
             : "",
           selectedSize: selectedSize ? String(selectedSize) : null,
-          quantity: product.quantity || 1,
+          quantity: Number(product.quantity) || 1,
         };
         console.log("Adding new item:", {
           id: newItem.id,

@@ -1,0 +1,17 @@
+/vendor
+/node_modules
+/.env
+/.env.backup
+/.git
+/.github
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/tests
+/phpunit.xml
+/.phpunit.result.cache
+/docker
+Dockerfile
+docker-compose.yml
+*.md
