@@ -40,6 +40,9 @@ RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
     && echo "post_max_size = 12M" >> "$PHP_INI_DIR/conf.d/uploads.ini" \
     && echo "memory_limit = 256M" >> "$PHP_INI_DIR/conf.d/uploads.ini"
 
+# Which service: "api", "dashboard", or "combined" (default)
+ARG SERVICE_ROLE=combined
+
 WORKDIR /var/www/html
 
 # Copy application files
@@ -50,8 +53,11 @@ COPY --from=vendor /app/vendor ./vendor
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Nginx config
-COPY docker/nginx.conf /etc/nginx/http.d/default.conf
+# Nginx config — pick the right one based on SERVICE_ROLE
+COPY docker/nginx.conf        /tmp/nginx-combined.conf
+COPY docker/nginx-api.conf    /tmp/nginx-api.conf
+COPY docker/nginx-dashboard.conf /tmp/nginx-dashboard.conf
+RUN cp /tmp/nginx-${SERVICE_ROLE}.conf /etc/nginx/http.d/default.conf
 
 # Supervisor config
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -59,8 +65,11 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Expose port 80
 EXPOSE 80
 
-# Entrypoint: run migrations, cache config, then start Supervisor
-COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Entrypoint — API/combined runs migrations, dashboard does not
+COPY docker/entrypoint.sh           /tmp/entrypoint-combined.sh
+COPY docker/entrypoint.sh           /tmp/entrypoint-api.sh
+COPY docker/entrypoint-dashboard.sh /tmp/entrypoint-dashboard.sh
+RUN cp /tmp/entrypoint-${SERVICE_ROLE}.sh /entrypoint.sh \
+    && chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

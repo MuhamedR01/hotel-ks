@@ -12,15 +12,22 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
+|
+| DASHBOARD_PATH env controls the URL prefix:
+|   - "dashboard"  → /dashboard/login  (combined deployment)
+|   - ""           → /login             (standalone dashboard.hotel-ks.com)
+|
 */
 
-// Redirect root to dashboard
+$dashboardPrefix = env('DASHBOARD_PATH', 'dashboard');
+
+// Redirect root to dashboard login
 Route::get('/', function () {
     return redirect()->route('dashboard.login');
 });
 
 // Dashboard auth routes
-Route::prefix('dashboard')->name('dashboard.')->group(function () {
+Route::prefix($dashboardPrefix)->name('dashboard.')->group(function () {
     Route::get('/login', [DashboardAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [DashboardAuthController::class, 'login'])->name('login.submit');
     Route::post('/logout', [DashboardAuthController::class, 'logout'])->name('logout');
