@@ -6,8 +6,19 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-echo "==> Running database migrations..."
-php artisan migrate --force
+echo "==> Waiting for database to be reachable..."
+MAX_TRIES=30
+COUNT=0
+until php artisan migrate --force 2>/dev/null; do
+    COUNT=$((COUNT + 1))
+    if [ $COUNT -ge $MAX_TRIES ]; then
+        echo "ERROR: Database not reachable after $MAX_TRIES attempts. Exiting."
+        exit 1
+    fi
+    echo "    Database not ready (attempt $COUNT/$MAX_TRIES). Retrying in 5s..."
+    sleep 5
+done
+echo "==> Migrations complete."
 
 echo "==> Seeding database (if needed)..."
 php artisan db:seed --force --class=AdminSeeder 2>/dev/null || true

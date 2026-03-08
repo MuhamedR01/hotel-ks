@@ -6,12 +6,19 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-echo "==> Waiting for API service to run migrations..."
+echo "==> Waiting for database to be reachable..."
 # Dashboard doesn't run migrations — the API service handles that.
 # Just wait for the DB to be reachable.
+MAX_TRIES=30
+COUNT=0
 until php artisan db:monitor --databases=mysql 2>/dev/null; do
-    echo "    Waiting for database..."
-    sleep 3
+    COUNT=$((COUNT + 1))
+    if [ $COUNT -ge $MAX_TRIES ]; then
+        echo "ERROR: Database not reachable after $MAX_TRIES attempts. Exiting."
+        exit 1
+    fi
+    echo "    Database not ready (attempt $COUNT/$MAX_TRIES). Retrying in 5s..."
+    sleep 5
 done
 
 echo "==> Creating storage link..."

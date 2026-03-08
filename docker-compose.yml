@@ -46,6 +46,7 @@ services:
       ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD}
     networks:
       - hotel-network
+      - coolify
 
   # ── Laravel Dashboard (dashboard.hotel-ks.com) ──────────────
   dashboard:
@@ -84,6 +85,7 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-https://hotel-ks.com}
     networks:
       - hotel-network
+      - coolify
 
   # ── React Frontend (hotel-ks.com) ───────────────────────────
   frontend:
@@ -98,4 +100,5 @@ services:
 
 networks:
   hotel-network:
-    driver: bridge
+  coolify:
+    external: true
