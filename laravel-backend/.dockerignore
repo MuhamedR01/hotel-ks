@@ -11,7 +11,6 @@
 /tests
 /phpunit.xml
 /.phpunit.result.cache
-/docker
 Dockerfile
 docker-compose.yml
 *.md
