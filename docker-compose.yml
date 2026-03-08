@@ -7,31 +7,12 @@
 #    api.hotel-ks.com       → api       (Laravel API)
 #    dashboard.hotel-ks.com → dashboard (Laravel Blade)
 #
-#  Usage:
-#    docker compose up -d --build
+#  MySQL is managed as a separate Coolify database resource.
+#  Connect via DB_HOST / DB_DATABASE / DB_USERNAME / DB_PASSWORD.
 #
 # ──────────────────────────────────────────────────────────────
 
 services:
-  # ── MySQL Database ───────────────────────────────────────────
-  mysql:
-    image: mysql:8.0
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-hotel_ks}
-      MYSQL_USER: ${DB_USERNAME:-hotel_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - hotel-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # ── Laravel API (api.hotel-ks.com) ──────────────────────────
   api:
     build:
@@ -40,9 +21,6 @@ services:
       args:
         SERVICE_ROLE: api
     restart: unless-stopped
-    depends_on:
-      mysql:
-        condition: service_healthy
     environment:
       APP_NAME: "Hotel KS API"
       APP_ENV: production
@@ -52,10 +30,10 @@ services:
       APP_LOCALE: sq
 
       DB_CONNECTION: mysql
-      DB_HOST: mysql
+      DB_HOST: ${DB_HOST}
       DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE:-hotel_ks}
-      DB_USERNAME: ${DB_USERNAME:-hotel_user}
+      DB_DATABASE: ${DB_DATABASE:-default}
+      DB_USERNAME: ${DB_USERNAME:-mysql}
       DB_PASSWORD: ${DB_PASSWORD}
 
       SESSION_DRIVER: database
@@ -66,8 +44,6 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-https://hotel-ks.com}
 
       ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD}
-    ports:
-      - "${API_PORT:-8000}:80"
     networks:
       - hotel-network
 
@@ -80,8 +56,6 @@ services:
         SERVICE_ROLE: dashboard
     restart: unless-stopped
     depends_on:
-      mysql:
-        condition: service_healthy
       api:
         condition: service_started
     environment:
@@ -96,10 +70,10 @@ services:
       DASHBOARD_PATH: ""
 
       DB_CONNECTION: mysql
-      DB_HOST: mysql
+      DB_HOST: ${DB_HOST}
       DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE:-hotel_ks}
-      DB_USERNAME: ${DB_USERNAME:-hotel_user}
+      DB_DATABASE: ${DB_DATABASE:-default}
+      DB_USERNAME: ${DB_USERNAME:-mysql}
       DB_PASSWORD: ${DB_PASSWORD}
 
       SESSION_DRIVER: database
@@ -108,8 +82,6 @@ services:
 
       SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-hotel-ks.com,dashboard.hotel-ks.com}
       FRONTEND_URL: ${FRONTEND_URL:-https://hotel-ks.com}
-    ports:
-      - "${DASHBOARD_PORT:-8001}:80"
     networks:
       - hotel-network
 
@@ -121,13 +93,8 @@ services:
       args:
         VITE_API_BASE_URL: ${API_URL:-https://api.hotel-ks.com}/api
     restart: unless-stopped
-    ports:
-      - "${FRONTEND_PORT:-80}:80"
     networks:
       - hotel-network
-
-volumes:
-  mysql_data:
 
 networks:
   hotel-network:
