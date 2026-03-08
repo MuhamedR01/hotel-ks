@@ -21,10 +21,12 @@ use Illuminate\Support\Facades\Route;
 
 $dashboardPrefix = config('app.dashboard_path', 'dashboard');
 
-// Redirect root to dashboard login
-Route::get('/', function () {
-    return redirect()->route('dashboard.login');
-});
+// Redirect root to dashboard login (only when dashboard is at a sub-path)
+if ($dashboardPrefix !== '') {
+    Route::get('/', function () {
+        return redirect()->route('dashboard.login');
+    });
+}
 
 // Dashboard auth routes
 Route::prefix($dashboardPrefix)->name('dashboard.')->group(function () {
