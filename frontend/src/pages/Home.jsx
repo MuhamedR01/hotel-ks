@@ -10,13 +10,13 @@ function Home() {
 
   useEffect(() => {
     // Fetch featured products from backend
-    const base = import.meta.env.VITE_API_BASE_URL || "/backend";
-    fetch(`${base}/get_products.php?limit=3`)
+    const base = import.meta.env.VITE_API_BASE_URL || "/api";
+    fetch(`${base}/products?limit=3`)
       .then((res) => {
         if (!res.ok) {
           return res.json().then((data) => {
             throw new Error(
-              data.message || data.error || "Failed to fetch products"
+              data.message || data.error || "Failed to fetch products",
             );
           });
         }

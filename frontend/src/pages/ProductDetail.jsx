@@ -22,9 +22,9 @@ const ProductDetail = () => {
     setLoading(true);
     setError(null);
 
-    const base = import.meta.env.VITE_API_BASE_URL || "/backend";
+    const base = import.meta.env.VITE_API_BASE_URL || "/api";
 
-    fetch(`${base}/get_product.php?id=${id}`)
+    fetch(`${base}/products/${id}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -79,13 +79,13 @@ const ProductDetail = () => {
   const selectedSizeObj =
     product?.has_sizes && normalizedSelectedSize
       ? (product.sizes || []).find(
-          (s) => String(s.size).toUpperCase().trim() === normalizedSelectedSize
+          (s) => String(s.size).toUpperCase().trim() === normalizedSelectedSize,
         )
       : null;
 
   const isAvailable = selectedSizeObj
-    ? selectedSizeObj.available ?? true
-    : product?.available ?? true;
+    ? (selectedSizeObj.available ?? true)
+    : (product?.available ?? true);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -123,7 +123,7 @@ const ProductDetail = () => {
     } catch (err) {
       console.error("Error adding to cart:", err);
       alert(
-        "Ndodhi një gabim gjatë shtimit në shportë. Shikoni konsolën për detaje."
+        "Ndodhi një gabim gjatë shtimit në shportë. Shikoni konsolën për detaje.",
       );
     }
   };
@@ -159,7 +159,7 @@ const ProductDetail = () => {
   const prevImage = () => {
     if (product && product.images && product.images.length > 1) {
       setSelectedImage(
-        (prev) => (prev - 1 + product.images.length) % product.images.length
+        (prev) => (prev - 1 + product.images.length) % product.images.length,
       );
     }
   };

@@ -13,14 +13,14 @@ function Products() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const base = import.meta.env.VITE_API_BASE_URL || "/backend";
-        const res = await fetch(`${base}/get_products.php`);
+        const base = import.meta.env.VITE_API_BASE_URL || "/api";
+        const res = await fetch(`${base}/products`);
         const data = await res.json();
 
         if (!res.ok) {
           console.error("Server error details:", data);
           throw new Error(
-            data.message || data.error || "Failed to fetch products"
+            data.message || data.error || "Failed to fetch products",
           );
         }
 
@@ -63,7 +63,7 @@ function Products() {
 
   const sortedProducts = useMemo(() => {
     let filtered = products.filter((product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
     switch (sortBy) {
@@ -235,12 +235,14 @@ function Products() {
                     }}
                     disabled={!(product.available ?? true)}
                     className={`w-full py-2 rounded-lg transition-colors font-semibold text-sm ${
-                      product.available ?? true
+                      (product.available ?? true)
                         ? "bg-blue-600 hover:bg-blue-700 text-white"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                   >
-                    {product.available ?? true ? "Shto në Shportë" : "Mbaruar"}
+                    {(product.available ?? true)
+                      ? "Shto në Shportë"
+                      : "Mbaruar"}
                   </button>
                 </div>
               </Link>

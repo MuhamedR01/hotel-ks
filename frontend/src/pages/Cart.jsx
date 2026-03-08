@@ -66,7 +66,7 @@ const Cart = () => {
   const handleRemoveItem = (productId, selectedSize) => {
     if (
       window.confirm(
-        "Jeni të sigurt që dëshironi të hiqni këtë produkt nga shporta?"
+        "Jeni të sigurt që dëshironi të hiqni këtë produkt nga shporta?",
       )
     ) {
       removeFromCart(productId, selectedSize);
@@ -114,8 +114,8 @@ const Cart = () => {
       // avoid refetching
       if (fetchedImages[key]) return;
 
-      const base = import.meta.env.VITE_API_BASE_URL || "/backend";
-      fetch(`${base}/get_product.php?id=${item.id}`)
+      const base = import.meta.env.VITE_API_BASE_URL || "/api";
+      fetch(`${base}/products/${item.id}`)
         .then((res) => res.json())
         .then((data) => {
           if (!active) return;
@@ -279,7 +279,7 @@ const Cart = () => {
                                   handleQuantityChange(
                                     item.id,
                                     item.quantity - 1,
-                                    item.selectedSize
+                                    item.selectedSize,
                                   )
                                 }
                                 className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
@@ -295,7 +295,7 @@ const Cart = () => {
                                   handleQuantityChange(
                                     item.id,
                                     item.quantity + 1,
-                                    item.selectedSize
+                                    item.selectedSize,
                                   )
                                 }
                                 className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
@@ -394,7 +394,7 @@ const Cart = () => {
                               handleQuantityChange(
                                 item.id,
                                 item.quantity - 1,
-                                item.selectedSize
+                                item.selectedSize,
                               )
                             }
                             className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
@@ -410,7 +410,7 @@ const Cart = () => {
                               handleQuantityChange(
                                 item.id,
                                 item.quantity + 1,
-                                item.selectedSize
+                                item.selectedSize,
                               )
                             }
                             className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
