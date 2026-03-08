@@ -8,6 +8,46 @@
 - Web server (Apache/Nginx)
 - Composer (optional, for PHP dependencies)
 
+## 🐳 Docker deployment (Coolify / docker-compose)
+
+If you run the app with Docker (`docker-compose` or Coolify), the API and dashboard need correct database credentials from a **root-level `.env`** (next to `docker-compose.yml`).
+
+### 1. Create `.env` at project root
+
+```bash
+cd hotel-ks
+cp .env.example .env
+```
+
+Edit `.env` and set at least:
+
+- **`DB_DATABASE`** – e.g. `hotel_ks`
+- **`DB_USERNAME`** – e.g. `hotel_ks` (MySQL will create this user)
+- **`DB_PASSWORD`** – a strong password (used for both root and this user)
+- **`APP_KEY`** – Laravel app key (e.g. run `php artisan key:generate --show` in `laravel-backend` and paste the value)
+- **`ADMIN_DEFAULT_PASSWORD`** – default password for the dashboard admin
+
+### 2. Reset MySQL if you already ran with wrong credentials
+
+If you previously started the stack **without** a proper `.env` (or with different `DB_*` values), the MySQL volume may have been created with user `mysql` and database `default`, which causes "Access denied". Remove the volume and start again:
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+Then run migrations inside the API container:
+
+```bash
+docker compose exec api php artisan migrate
+```
+
+(Optional) Generate a new `APP_KEY` from the Laravel backend and put it in the root `.env`:
+
+```bash
+cd laravel-backend && php artisan key:generate --show
+```
+
 ## 🚀 Installation Steps
 
 ### 1. Clone the Repository
