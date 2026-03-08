@@ -7,12 +7,38 @@
 #    api.hotel-ks.com       → api       (Laravel API)
 #    dashboard.hotel-ks.com → dashboard (Laravel Blade)
 #
-#  MySQL is managed as a separate Coolify database resource.
-#  Connect via DB_HOST / DB_DATABASE / DB_USERNAME / DB_PASSWORD.
-#
 # ──────────────────────────────────────────────────────────────
 
 services:
+  # ── MySQL Database ──────────────────────────────────────────
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-hotel_ks}
+      MYSQL_USER: ${DB_USERNAME:-mysql}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - hotel-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${DB_PASSWORD}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
   # ── Laravel API (api.hotel-ks.com) ──────────────────────────
   api:
     build:
@@ -21,6 +47,9 @@ services:
       args:
         SERVICE_ROLE: api
     restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
     environment:
       APP_NAME: "Hotel KS API"
       APP_ENV: production
@@ -30,9 +59,9 @@ services:
       APP_LOCALE: sq
 
       DB_CONNECTION: mysql
-      DB_HOST: ${DB_HOST}
+      DB_HOST: mysql
       DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE:-default}
+      DB_DATABASE: ${DB_DATABASE:-hotel_ks}
       DB_USERNAME: ${DB_USERNAME:-mysql}
       DB_PASSWORD: ${DB_PASSWORD}
 
@@ -46,7 +75,6 @@ services:
       ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD}
     networks:
       - hotel-network
-      - coolify
 
   # ── Laravel Dashboard (dashboard.hotel-ks.com) ──────────────
   dashboard:
@@ -57,6 +85,8 @@ services:
         SERVICE_ROLE: dashboard
     restart: unless-stopped
     depends_on:
+      mysql:
+        condition: service_healthy
       api:
         condition: service_started
     environment:
@@ -71,9 +101,9 @@ services:
       DASHBOARD_PATH: ""
 
       DB_CONNECTION: mysql
-      DB_HOST: ${DB_HOST}
+      DB_HOST: mysql
       DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE:-default}
+      DB_DATABASE: ${DB_DATABASE:-hotel_ks}
       DB_USERNAME: ${DB_USERNAME:-mysql}
       DB_PASSWORD: ${DB_PASSWORD}
 
@@ -85,7 +115,6 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-https://hotel-ks.com}
     networks:
       - hotel-network
-      - coolify
 
   # ── React Frontend (hotel-ks.com) ───────────────────────────
   frontend:
@@ -98,7 +127,8 @@ services:
     networks:
       - hotel-network
 
+volumes:
+  mysql-data:
+
 networks:
   hotel-network:
-  coolify:
-    external: true
