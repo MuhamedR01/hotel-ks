@@ -52,6 +52,7 @@ dashboard/config.php
 #  Deployment docs (keep private)
 # ──────────────────────────────────────────────
 DEPLOY.md
+setup.md
 
 # ──────────────────────────────────────────────
 #  OS / misc

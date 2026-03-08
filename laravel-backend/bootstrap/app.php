@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Sanctum stateful middleware for SPA
         $middleware->statefulApi();
 
+        // Force JSON responses for API routes
+        $middleware->prependToGroup('api', \App\Http\Middleware\ForceJsonResponse::class);
+
         // Register middleware aliases
         $middleware->alias([
             'admin.auth' => \App\Http\Middleware\AdminAuth::class,

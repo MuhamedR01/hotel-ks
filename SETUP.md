@@ -1,52 +1,150 @@
-# Hotel KS - Setup Guide
+# Hotel KS - Coolify Deployment Guide
 
-## 📋 Prerequisites
+## Architecture
 
-- PHP 7.4 or higher
-- MySQL 5.7+ or MariaDB 10.3+
-- Node.js 14+ and npm
-- Web server (Apache/Nginx)
-- Composer (optional, for PHP dependencies)
+3 separate Coolify applications + 1 Coolify MySQL resource, all on the same server:
 
-## 🐳 Docker deployment (Coolify / docker-compose)
+| Application   | Domain                   | Source              | Base Directory    |
+| ------------- | ------------------------ | ------------------- | ----------------- |
+| **MySQL**     | (internal)               | Coolify DB resource | —                 |
+| **API**       | `api.hotel-ks.com`       | Same git repo       | `laravel-backend` |
+| **Dashboard** | `dashboard.hotel-ks.com` | Same git repo       | `laravel-backend` |
+| **Frontend**  | `hotel-ks.com`           | Same git repo       | `frontend`        |
 
-If you run the app with Docker (`docker-compose` or Coolify), the API and dashboard need correct database credentials from a **root-level `.env`** (next to `docker-compose.yml`).
+Coolify automatically puts all resources on the `coolify` Docker network, so they can reach each other by hostname.
 
-### 1. Create `.env` at project root
+---
 
-```bash
-cd hotel-ks
-cp .env.example .env
+## Step 1: Create the MySQL Database in Coolify
+
+1. Go to **Projects → your project → + New → Database → MySQL**
+2. Note the auto-generated **hostname** (e.g. `zw4kw8w88o8o88kwo48w0wsw`)
+3. Set a strong root password
+4. The default database is `default` and user is `mysql` — that's fine
+
+---
+
+## Step 2: Create the API Application
+
+1. **+ New → Application** (Docker Based)
+2. Connect your git repo
+3. Set:
+   - **Base Directory**: `laravel-backend`
+   - **Dockerfile Location**: `Dockerfile`
+   - **Build Args**: `SERVICE_ROLE=api`
+   - **Domain**: `api.hotel-ks.com`
+   - **Port**: `80`
+
+4. **Environment Variables** (paste all):
+
+```env
+APP_NAME=Hotel KS API
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:GENERATE_WITH_php_artisan_key_generate_--show
+APP_URL=https://api.hotel-ks.com
+APP_LOCALE=sq
+
+DB_CONNECTION=mysql
+DB_HOST=YOUR_MYSQL_HOSTNAME_FROM_STEP1
+DB_PORT=3306
+DB_DATABASE=default
+DB_USERNAME=mysql
+DB_PASSWORD=YOUR_MYSQL_PASSWORD_FROM_STEP1
+
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+
+SANCTUM_STATEFUL_DOMAINS=hotel-ks.com,dashboard.hotel-ks.com
+FRONTEND_URL=https://hotel-ks.com
+ADMIN_DEFAULT_PASSWORD=YourSecureAdminPassword123!
 ```
 
-Edit `.env` and set at least:
+5. Deploy. Check logs — you should see migrations running successfully.
 
-- **`DB_DATABASE`** – e.g. `hotel_ks`
-- **`DB_USERNAME`** – e.g. `hotel_ks` (MySQL will create this user)
-- **`DB_PASSWORD`** – a strong password (used for both root and this user)
-- **`APP_KEY`** – Laravel app key (e.g. run `php artisan key:generate --show` in `laravel-backend` and paste the value)
-- **`ADMIN_DEFAULT_PASSWORD`** – default password for the dashboard admin
+---
 
-### 2. Reset MySQL if you already ran with wrong credentials
+## Step 3: Create the Dashboard Application
 
-If you previously started the stack **without** a proper `.env` (or with different `DB_*` values), the MySQL volume may have been created with user `mysql` and database `default`, which causes "Access denied". Remove the volume and start again:
+1. **+ New → Application** (Docker Based)
+2. Connect the same git repo
+3. Set:
+   - **Base Directory**: `laravel-backend`
+   - **Dockerfile Location**: `Dockerfile`
+   - **Build Args**: `SERVICE_ROLE=dashboard`
+   - **Domain**: `dashboard.hotel-ks.com`
+   - **Port**: `80`
 
-```bash
-docker compose down -v
-docker compose up -d
+4. **Environment Variables** (paste all):
+
+```env
+APP_NAME=Hotel KS Dashboard
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:SAME_KEY_AS_API
+APP_URL=https://dashboard.hotel-ks.com
+APP_LOCALE=sq
+
+DASHBOARD_PATH=
+
+DB_CONNECTION=mysql
+DB_HOST=YOUR_MYSQL_HOSTNAME_FROM_STEP1
+DB_PORT=3306
+DB_DATABASE=default
+DB_USERNAME=mysql
+DB_PASSWORD=YOUR_MYSQL_PASSWORD_FROM_STEP1
+
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+
+SANCTUM_STATEFUL_DOMAINS=hotel-ks.com,dashboard.hotel-ks.com
+FRONTEND_URL=https://hotel-ks.com
 ```
 
-Then run migrations inside the API container:
+> **Important**: `DASHBOARD_PATH=` (empty) makes the dashboard routes live at `/` on its own domain.
+> The `APP_KEY` must be the **same** as the API so they can share encrypted sessions/data.
 
-```bash
-docker compose exec api php artisan migrate
-```
+5. Deploy. The dashboard waits for the DB (no migrations — API handles that).
 
-(Optional) Generate a new `APP_KEY` from the Laravel backend and put it in the root `.env`:
+---
 
-```bash
-cd laravel-backend && php artisan key:generate --show
-```
+## Step 4: Create the Frontend Application
+
+1. **+ New → Application** (Docker Based)
+2. Connect the same git repo
+3. Set:
+   - **Base Directory**: `frontend`
+   - **Dockerfile Location**: `Dockerfile`
+   - **Build Args**: `VITE_API_BASE_URL=https://api.hotel-ks.com/api`
+   - **Domain**: `hotel-ks.com`
+   - **Port**: `80`
+
+4. No environment variables needed (API URL is baked in at build time).
+5. Deploy.
+
+---
+
+## Step 5: Verify
+
+- `https://hotel-ks.com` — React SPA loads, products fetch from API
+- `https://api.hotel-ks.com/api/products` — returns JSON product list
+- `https://dashboard.hotel-ks.com/login` — admin login page
+
+Default admin login: `admin` / your `ADMIN_DEFAULT_PASSWORD`
+
+---
+
+## Troubleshooting
+
+**API can't reach MySQL**: Both must be in the same Coolify project. Coolify auto-connects them on the `coolify` network. Verify the `DB_HOST` matches the MySQL resource hostname.
+
+**Dashboard 500 error**: Ensure `APP_KEY` is identical to the API's key. Check logs with Coolify's log viewer.
+
+**CORS errors on frontend**: `FRONTEND_URL` must be `https://hotel-ks.com` (exact origin). Check the API logs.
+
+**Migrations fail**: The API entrypoint retries 30 times (5s apart). If MySQL is still starting, it will catch up. If it keeps failing, check `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.
 
 ## 🚀 Installation Steps
 
@@ -68,6 +166,7 @@ nano backend/config.php
 ```
 
 Update these values in `backend/config.php`:
+
 - `DB_HOST`: Your database host (usually `localhost`)
 - `DB_USER`: Your MySQL username
 - `DB_PASS`: Your MySQL password
@@ -94,6 +193,7 @@ npm install
 ### 5. Configure Frontend Environment
 
 Create `frontend/.env`:
+
 ```env
 VITE_API_BASE_URL=http://localhost/backend
 ```
@@ -107,6 +207,7 @@ npm run build
 ```
 
 Or for development:
+
 ```bash
 npm run dev
 ```
@@ -114,14 +215,16 @@ npm run dev
 ### 7. Configure Web Server
 
 #### Apache
+
 Point your DocumentRoot to the project root directory. The frontend build will be in `frontend/dist`.
 
 Example virtual host configuration:
+
 ```apache
 <VirtualHost *:80>
     ServerName yoursite.com
     DocumentRoot /path/to/hotel-ks
-    
+
     <Directory /path/to/hotel-ks>
         Options Indexes FollowSymLinks
         AllowOverride All
@@ -131,6 +234,7 @@ Example virtual host configuration:
 ```
 
 #### Nginx
+
 ```nginx
 server {
     listen 80;
@@ -159,9 +263,9 @@ Access the dashboard setup page (create a temporary setup script or use direct d
 -- Create admin user with password 'your_secure_password'
 -- First, generate password hash in PHP: password_hash('your_secure_password', PASSWORD_DEFAULT);
 
-INSERT INTO admins (username, password, name, email, role, created_at) 
+INSERT INTO admins (username, password, name, email, role, created_at)
 VALUES (
-    'admin', 
+    'admin',
     '$2y$10$YourPasswordHashHere',
     'Administrator',
     'admin@yoursite.com',
@@ -230,20 +334,24 @@ chmod -R 775 uploads/
 ## 🐛 Troubleshooting
 
 ### Database Connection Error
+
 - Verify credentials in `backend/config.php`
 - Check if MySQL service is running
 - Ensure database exists
 
 ### 403 Forbidden Error
+
 - Check file permissions
 - Verify web server configuration
 - Check `.htaccess` files
 
 ### CORS Errors
+
 - Update `ALLOWED_ORIGIN` in `backend/config.php`
 - Ensure frontend and backend URLs match
 
 ### Can't Login to Dashboard
+
 - Verify admin user exists in database
 - Check password hash is correct
 - Clear browser cookies/cache
