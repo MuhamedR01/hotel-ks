@@ -56,6 +56,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Dashboard Path Prefix
+    |--------------------------------------------------------------------------
+    |
+    | Controls the URL prefix for dashboard routes.
+    | Set to "dashboard" for combined deployment (/dashboard/login)
+    | or "" (empty) for standalone dashboard domain (/login).
+    |
+    */
+
+    'dashboard_path' => env('DASHBOARD_PATH', 'dashboard'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

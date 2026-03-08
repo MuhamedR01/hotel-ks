@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust all proxies (Coolify reverse proxy terminates SSL)
+        $middleware->trustProxies(at: '*');
+
         // Sanctum stateful middleware for SPA
         $middleware->statefulApi();
 

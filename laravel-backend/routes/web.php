@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-$dashboardPrefix = env('DASHBOARD_PATH', 'dashboard');
+$dashboardPrefix = config('app.dashboard_path', 'dashboard');
 
 // Redirect root to dashboard login
 Route::get('/', function () {
