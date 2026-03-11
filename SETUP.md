@@ -31,13 +31,13 @@ Coolify automatically puts all resources on the `coolify` Docker network, so the
 3. Set:
    - **Base Directory**: `laravel-backend`
    - **Dockerfile Location**: `Dockerfile`
-   - **Build Args**: `SERVICE_ROLE=api`
    - **Domain**: `api.hotel-ks.com`
    - **Port**: `80`
 
 4. **Environment Variables** (paste all):
 
 ```env
+SERVICE_ROLE=api
 APP_NAME=Hotel KS API
 APP_ENV=production
 APP_DEBUG=false
@@ -72,13 +72,13 @@ ADMIN_DEFAULT_PASSWORD=YourSecureAdminPassword123!
 3. Set:
    - **Base Directory**: `laravel-backend`
    - **Dockerfile Location**: `Dockerfile`
-   - **Build Args**: `SERVICE_ROLE=dashboard`
    - **Domain**: `dashboard.hotel-ks.com`
    - **Port**: `80`
 
 4. **Environment Variables** (paste all):
 
 ```env
+SERVICE_ROLE=dashboard
 APP_NAME=Hotel KS Dashboard
 APP_ENV=production
 APP_DEBUG=false
@@ -117,11 +117,10 @@ FRONTEND_URL=https://hotel-ks.com
 3. Set:
    - **Base Directory**: `frontend`
    - **Dockerfile Location**: `Dockerfile`
-   - **Build Args**: `VITE_API_BASE_URL=https://api.hotel-ks.com/api`
    - **Domain**: `hotel-ks.com`
    - **Port**: `80`
 
-4. No environment variables needed (API URL is baked in at build time).
+4. No environment variables needed. The API URL is read from `frontend/.env.production` at build time.
 5. Deploy.
 
 ---

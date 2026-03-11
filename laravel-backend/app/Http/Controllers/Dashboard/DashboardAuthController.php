@@ -41,18 +41,24 @@ class DashboardAuthController extends Controller
                 ->with('err', 'Emri i përdoruesit ose fjalëkalimi është i gabuar.');
         }
 
-        Auth::guard('admin')->login($admin);
-        $request->session()->regenerate();
+        try {
+            Auth::guard('admin')->login($admin);
+            $request->session()->regenerate();
 
-        $admin->update(['last_login' => now()]);
+            $admin->update(['last_login' => now()]);
 
-        $landing = match (strtolower($admin->role)) {
-            'manager' => route('dashboard.products'),
-            'worker' => route('dashboard.orders'),
-            default => route('dashboard.index'),
-        };
+            $landing = match (strtolower($admin->role)) {
+                'manager' => route('dashboard.products'),
+                'worker' => route('dashboard.orders'),
+                default => route('dashboard.index'),
+            };
 
-        return redirect($landing);
+            return redirect($landing);
+        } catch (\Throwable $e) {
+            report($e);
+            return redirect()->route('dashboard.login')
+                ->withErrors(['login' => 'Login error: ' . $e->getMessage()]);
+        }
     }
 
     public function logout(Request $request)
