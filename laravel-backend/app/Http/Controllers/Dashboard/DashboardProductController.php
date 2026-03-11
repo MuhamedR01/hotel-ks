@@ -11,7 +11,6 @@ class DashboardProductController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search', '');
-        $page = max(1, $request->integer('page', 1));
         $perPage = 12;
 
         $query = Product::query();
@@ -23,20 +22,14 @@ class DashboardProductController extends Controller
             });
         }
 
-        $totalProducts = $query->count();
-        $totalPages = ceil($totalProducts / $perPage);
+        $products = $query->orderByDesc('created_at')->paginate($perPage);
 
-        $products = $query->orderByDesc('created_at')
-            ->limit($perPage)
-            ->offset(($page - 1) * $perPage)
-            ->get();
-
-        return view('dashboard.products', compact('products', 'search', 'page', 'totalPages', 'totalProducts'));
+        return view('dashboard.products.index', compact('products', 'search'));
     }
 
     public function create()
     {
-        return view('dashboard.add_product');
+        return view('dashboard.products.create');
     }
 
     public function store(Request $request)
@@ -70,13 +63,13 @@ class DashboardProductController extends Controller
 
         Product::create($data);
 
-        return redirect()->route('dashboard.products')->with('success', 'added');
+        return redirect()->route('dashboard.products.index')->with('success', 'added');
     }
 
     public function edit(int $id)
     {
         $product = Product::findOrFail($id);
-        return view('dashboard.edit_product', compact('product'));
+        return view('dashboard.products.edit', compact('product'));
     }
 
     public function update(Request $request, int $id)
@@ -112,13 +105,13 @@ class DashboardProductController extends Controller
 
         $product->update($data);
 
-        return redirect()->route('dashboard.products')->with('success', 'updated');
+        return redirect()->route('dashboard.products.index')->with('success', 'updated');
     }
 
     public function destroy(int $id)
     {
         Product::findOrFail($id)->delete();
-        return redirect()->route('dashboard.products')->with('success', 'deleted');
+        return redirect()->route('dashboard.products.index')->with('success', 'deleted');
     }
 
     public function toggleAvailability(Request $request)

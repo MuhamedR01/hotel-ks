@@ -26,7 +26,7 @@ class DashboardSettingsController extends Controller
             'worker' => 'bg-green-100 text-green-800',
         ];
 
-        return view('dashboard.settings', compact('admins', 'roleLabels', 'roleColors'));
+        return view('dashboard.settings.index', compact('admins', 'roleLabels', 'roleColors'));
     }
 
     public function addAdmin(Request $request)

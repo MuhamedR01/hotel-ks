@@ -11,7 +11,6 @@ class DashboardCustomerController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search', '');
-        $page = max(1, $request->integer('page', 1));
         $perPage = 10;
 
         $query = User::select('users.*')
@@ -30,14 +29,8 @@ class DashboardCustomerController extends Controller
             });
         }
 
-        $total = $query->getQuery()->getCountForPagination();
-        $totalPages = ceil($total / $perPage);
+        $customers = $query->orderByDesc('users.created_at')->paginate($perPage);
 
-        $customers = $query->orderByDesc('users.created_at')
-            ->limit($perPage)
-            ->offset(($page - 1) * $perPage)
-            ->get();
-
-        return view('dashboard.customers', compact('customers', 'search', 'page', 'totalPages', 'total'));
+        return view('dashboard.customers.index', compact('customers', 'search'));
     }
 }

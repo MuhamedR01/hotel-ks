@@ -41,7 +41,7 @@ class DashboardOrderController extends Controller
             'cancelled' => Order::where('status', 'cancelled')->count(),
         ];
 
-        return view('dashboard.orders', compact('orders', 'stats', 'status', 'search'));
+        return view('dashboard.orders.index', compact('orders', 'stats', 'status', 'search'));
     }
 
     public function show(int $id)
@@ -56,7 +56,7 @@ class DashboardOrderController extends Controller
             'processing' => 'Duke u Procesuar',
         ];
 
-        return view('dashboard.order_details', compact('order', 'statusLabels'));
+        return view('dashboard.orders.show', compact('order', 'statusLabels'));
     }
 
     public function updateStatus(Request $request, int $id)
@@ -67,7 +67,7 @@ class DashboardOrderController extends Controller
 
         Order::where('id', $id)->update(['status' => $request->status]);
 
-        return redirect()->route('dashboard.order_details', $id)
+        return redirect()->route('dashboard.orders.show', $id)
             ->with('success_message', 'Statusi i porosisë u përditësua me sukses!');
     }
 }
