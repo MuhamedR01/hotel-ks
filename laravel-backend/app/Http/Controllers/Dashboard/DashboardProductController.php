@@ -105,6 +105,13 @@ class DashboardProductController extends Controller
 
         $product->update($data);
 
+        // Update sizes if provided
+        if ($request->filled('sizes')) {
+            $sizes = array_map('trim', explode(',', $request->sizes));
+            $sizes = array_filter($sizes);
+            $product->update(['sizes' => array_values($sizes)]);
+        }
+
         return redirect()->route('dashboard.products.index')->with('success', 'updated');
     }
 
@@ -114,14 +121,13 @@ class DashboardProductController extends Controller
         return redirect()->route('dashboard.products.index')->with('success', 'deleted');
     }
 
-    public function toggleAvailability(Request $request)
+    public function toggleAvailability(Request $request, int $id)
     {
         $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
             'available' => 'required|in:0,1',
         ]);
 
-        Product::where('id', $request->product_id)
+        Product::where('id', $id)
             ->update(['available' => (bool) $request->available]);
 
         return back()->with('success_message',
@@ -129,18 +135,26 @@ class DashboardProductController extends Controller
         );
     }
 
-    public function toggleSizes(Request $request)
+    public function toggleSizes(Request $request, int $id)
     {
         $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
             'has_sizes' => 'required|in:0,1',
         ]);
 
-        Product::where('id', $request->product_id)
-            ->update(['has_sizes' => (bool) $request->has_sizes]);
+        $data = ['has_sizes' => (bool) $request->has_sizes];
+
+        // When enabling sizes, populate default sizes if empty
+        if ($request->has_sizes) {
+            $product = Product::findOrFail($id);
+            if (empty($product->sizes)) {
+                $data['sizes'] = ['S', 'M', 'L', 'XL'];
+            }
+        }
+
+        Product::where('id', $id)->update($data);
 
         return back()->with('success_message',
-            $request->has_sizes ? 'Sizes enabled for product.' : 'Sizes disabled for product.'
+            $request->has_sizes ? 'Madhësitë u aktivizuan.' : 'Madhësitë u çaktivizuan.'
         );
     }
 }

@@ -42,6 +42,14 @@
                 </div>
 
                 <div class="md:col-span-2">
+                    <label for="sizes" class="block text-sm font-medium text-gray-700 mb-1">Madhësitë (ndarë me presje)</label>
+                    <input type="text" id="sizes" name="sizes" value="{{ old('sizes', $product->sizes ? implode(', ', $product->sizes) : '') }}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="S, M, L, XL">
+                    <p class="text-xs text-gray-500 mt-1">Shkruani madhësitë e ndara me presje. Lëre bosh për madhësi standarde (S, M, L, XL).</p>
+                </div>
+
+                <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Imazhet</label>
                     <div class="mb-3">
                         <input type="file" id="images" name="images[]" multiple accept="image/*"
