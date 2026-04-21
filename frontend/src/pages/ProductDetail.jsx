@@ -253,11 +253,11 @@ const ProductDetail = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
             {/* Images */}
             <div>
-              <div className="mb-4 rounded-lg overflow-hidden bg-gray-100 relative group">
+              <div className="mb-4 rounded-lg overflow-hidden bg-gray-100 relative group" style={{minHeight: '24rem'}}>
                 <img
                   src={currentImage}
                   alt={product.name}
-                  className="w-full h-96 object-cover"
+                  className="w-full h-96 object-contain p-2"
                   onError={(e) => {
                     e.target.src =
                       "https://via.placeholder.com/800x600?text=No+Image";
@@ -306,7 +306,7 @@ const ProductDetail = () => {
                       <img
                         src={image}
                         alt={`${product.name} ${index + 1}`}
-                        className="w-full h-20 object-cover"
+                        className="w-full h-20 object-contain bg-gray-50 p-1"
                         onError={(e) => {
                           e.target.src =
                             "https://via.placeholder.com/100x100?text=No+Image";
@@ -441,7 +441,7 @@ const ProductDetail = () => {
                 <button
                   onClick={handleBuyNow}
                   disabled={!isAvailable}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   <i className="fas fa-bolt mr-2"></i>
                   Bli Tani

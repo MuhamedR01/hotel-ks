@@ -1,101 +1,102 @@
-
-import { api } from '../services/api'
-import { useState, useEffect } from 'react'
-import { User, Mail, Phone, MapPin, Globe, Hash } from 'lucide-react'
-import { useAuth } from '../context/AuthContext'
+import { api } from "../services/api";
+import { useState, useEffect } from "react";
+import { User, Mail, Phone, MapPin, Globe, Hash } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const Profile = () => {
-  const { user, login } = useAuth()
-  
+  const { user, login } = useAuth();
+
   const [formData, setFormData] = useState({
-    unique_id: '',
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    country: ''
-  })
-  
-  const [isEditing, setIsEditing] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [successMessage, setSuccessMessage] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
+    unique_id: "",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    country: "",
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Fetch user profile on component mount
   useEffect(() => {
-    fetchProfile()
-  }, [])
+    fetchProfile();
+  }, []);
 
   const fetchProfile = async () => {
     try {
-      setIsLoading(true)
-      const response = await api.getProfile()
-      
+      setIsLoading(true);
+      const response = await api.getProfile();
+
       if (response.success && response.user) {
         setFormData({
-          unique_id: response.user.unique_id || '',
-          name: response.user.name || '',
-          email: response.user.email || '',
-          phone: response.user.phone || '',
-          address: response.user.address || '',
-          city: response.user.city || '',
-          country: response.user.country || ''
-        })
+          unique_id: response.user.unique_id || "",
+          name: response.user.name || "",
+          email: response.user.email || "",
+          phone: response.user.phone || "",
+          address: response.user.address || "",
+          city: response.user.city || "",
+          country: response.user.country || "",
+        });
       }
     } catch (error) {
-      console.error('Error fetching profile:', error)
-      setErrorMessage('Nuk mund të ngarkohet profili. Ju lutem provoni përsëri.')
+      console.error("Error fetching profile:", error);
+      setErrorMessage(
+        "Nuk mund të ngarkohet profili. Ju lutem provoni përsëri.",
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
-    }))
-    
+      [name]: value,
+    }));
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
-      }))
+        [name]: "",
+      }));
     }
-    setSuccessMessage('')
-    setErrorMessage('')
-  }
+    setSuccessMessage("");
+    setErrorMessage("");
+  };
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Emri është i detyrueshëm'
+      newErrors.name = "Emri është i detyrueshëm";
     }
 
     if (formData.phone && !/^[\d\s\-\+\(\)]+$/.test(formData.phone)) {
-      newErrors.phone = 'Numri i telefonit nuk është i vlefshëm'
+      newErrors.phone = "Numri i telefonit nuk është i vlefshëm";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSuccessMessage('')
-    setErrorMessage('')
+    e.preventDefault();
+    setSuccessMessage("");
+    setErrorMessage("");
 
     if (!validateForm()) {
-      return
+      return;
     }
 
-    setIsSaving(true)
+    setIsSaving(true);
 
     try {
       const response = await api.updateProfile({
@@ -103,37 +104,40 @@ const Profile = () => {
         phone: formData.phone,
         address: formData.address,
         city: formData.city,
-        country: formData.country
-      })
+        country: formData.country,
+      });
 
       if (response.success) {
         // Update user context with new data
-        login(response.user)
-        
-        setSuccessMessage('Profili u përditësua me sukses!')
-        setIsEditing(false)
-        
+        login(response.user);
+
+        setSuccessMessage("Profili u përditësua me sukses!");
+        setIsEditing(false);
+
         // Clear success message after 3 seconds
         setTimeout(() => {
-          setSuccessMessage('')
-        }, 3000)
+          setSuccessMessage("");
+        }, 3000);
       }
     } catch (error) {
-      console.error('Error updating profile:', error)
-      setErrorMessage(error.message || 'Përditësimi i profilit dështoi. Ju lutem provoni përsëri.')
+      console.error("Error updating profile:", error);
+      setErrorMessage(
+        error.message ||
+          "Përditësimi i profilit dështoi. Ju lutem provoni përsëri.",
+      );
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleCancel = () => {
     // Reset form to original values
-    fetchProfile()
-    setIsEditing(false)
-    setErrors({})
-    setSuccessMessage('')
-    setErrorMessage('')
-  }
+    fetchProfile();
+    setIsEditing(false);
+    setErrors({});
+    setSuccessMessage("");
+    setErrorMessage("");
+  };
 
   if (isLoading) {
     return (
@@ -143,7 +147,7 @@ const Profile = () => {
           <p className="mt-4 text-gray-600">Duke ngarkuar profilin...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -157,12 +161,16 @@ const Profile = () => {
                 <User className="w-12 h-12 text-gray-800" />
               </div>
               <div className="text-white">
-                <h1 className="text-3xl font-bold">{formData.name || 'Përdoruesi'}</h1>
+                <h1 className="text-3xl font-bold">
+                  {formData.name || "Përdoruesi"}
+                </h1>
                 <p className="text-blue-100 mt-1">{formData.email}</p>
                 {formData.unique_id && (
                   <div className="mt-2 inline-flex items-center bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
                     <Hash className="w-4 h-4 mr-1" />
-                    <span className="text-sm font-mono font-semibold">ID: {formData.unique_id}</span>
+                    <span className="text-sm font-mono font-semibold">
+                      ID: {formData.unique_id}
+                    </span>
                   </div>
                 )}
               </div>
@@ -189,7 +197,10 @@ const Profile = () => {
             <div className="space-y-6">
               {/* Unique ID (Read-only) */}
               <div>
-                <label htmlFor="unique_id" className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="unique_id"
+                  className="flex items-center text-sm font-medium text-gray-700 mb-2"
+                >
                   <Hash className="w-4 h-4 mr-2" />
                   ID Unik
                 </label>
@@ -216,7 +227,10 @@ const Profile = () => {
 
               {/* Name */}
               <div>
-                <label htmlFor="name" className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="name"
+                  className="flex items-center text-sm font-medium text-gray-700 mb-2"
+                >
                   <User className="w-4 h-4 mr-2" />
                   Emri i Plotë
                 </label>
@@ -228,8 +242,8 @@ const Profile = () => {
                   onChange={handleChange}
                   disabled={!isEditing}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
-                    errors.name ? 'border-red-500' : 'border-gray-300'
-                  } ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                    errors.name ? "border-red-500" : "border-gray-300"
+                  } ${!isEditing ? "bg-gray-50 cursor-not-allowed" : ""}`}
                   placeholder="Shkruani emrin tuaj"
                 />
                 {errors.name && (
@@ -239,7 +253,10 @@ const Profile = () => {
 
               {/* Email (read-only) */}
               <div>
-                <label htmlFor="email" className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="email"
+                  className="flex items-center text-sm font-medium text-gray-700 mb-2"
+                >
                   <Mail className="w-4 h-4 mr-2" />
                   Email
                 </label>
@@ -255,7 +272,10 @@ const Profile = () => {
 
               {/* Phone */}
               <div>
-                <label htmlFor="phone" className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="phone"
+                  className="flex items-center text-sm font-medium text-gray-700 mb-2"
+                >
                   <Phone className="w-4 h-4 mr-2" />
                   Numri i Telefonit
                 </label>
@@ -267,8 +287,8 @@ const Profile = () => {
                   onChange={handleChange}
                   disabled={!isEditing}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
-                    errors.phone ? 'border-red-500' : 'border-gray-300'
-                  } ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                    errors.phone ? "border-red-500" : "border-gray-300"
+                  } ${!isEditing ? "bg-gray-50 cursor-not-allowed" : ""}`}
                   placeholder="+355 69 123 4567"
                 />
                 {errors.phone && (
@@ -278,7 +298,10 @@ const Profile = () => {
 
               {/* Address */}
               <div>
-                <label htmlFor="address" className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="address"
+                  className="flex items-center text-sm font-medium text-gray-700 mb-2"
+                >
                   <MapPin className="w-4 h-4 mr-2" />
                   Adresa
                 </label>
@@ -290,7 +313,7 @@ const Profile = () => {
                   onChange={handleChange}
                   disabled={!isEditing}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
-                    !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
+                    !isEditing ? "bg-gray-50 cursor-not-allowed" : ""
                   }`}
                   placeholder="Rruga e Durrësit"
                 />
@@ -298,7 +321,10 @@ const Profile = () => {
 
               {/* City */}
               <div>
-                <label htmlFor="city" className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="city"
+                  className="flex items-center text-sm font-medium text-gray-700 mb-2"
+                >
                   <Globe className="w-4 h-4 mr-2" />
                   Qyteti
                 </label>
@@ -310,7 +336,7 @@ const Profile = () => {
                   onChange={handleChange}
                   disabled={!isEditing}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
-                    !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
+                    !isEditing ? "bg-gray-50 cursor-not-allowed" : ""
                   }`}
                   placeholder="Tiranë"
                 />
@@ -318,7 +344,10 @@ const Profile = () => {
 
               {/* Country */}
               <div>
-                <label htmlFor="country" className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="country"
+                  className="flex items-center text-sm font-medium text-gray-700 mb-2"
+                >
                   <Globe className="w-4 h-4 mr-2" />
                   Shteti
                 </label>
@@ -330,7 +359,7 @@ const Profile = () => {
                   onChange={handleChange}
                   disabled={!isEditing}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
-                    !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
+                    !isEditing ? "bg-gray-50 cursor-not-allowed" : ""
                   }`}
                   placeholder="Shqipëri"
                 />
@@ -353,7 +382,7 @@ const Profile = () => {
                     disabled={isSaving}
                     className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSaving ? 'Duke ruajtur...' : 'Ruaj Ndryshimet'}
+                    {isSaving ? "Duke ruajtur..." : "Ruaj Ndryshimet"}
                   </button>
                 </>
               ) : (
@@ -370,7 +399,7 @@ const Profile = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Profile
+export default Profile;
