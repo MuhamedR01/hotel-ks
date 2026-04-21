@@ -83,7 +83,7 @@ function Navbar() {
               <img
                 src="/logominimodaks.png"
                 alt="minimodaks"
-                className="h-14 md:h-16 w-auto transition-transform group-hover:scale-105 duration-200"
+                className="h-12 md:h-14 w-auto max-w-[180px] md:max-w-[220px] transition-transform group-hover:scale-105 duration-200"
               />
             </Link>
           </div>

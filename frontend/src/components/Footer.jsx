@@ -16,7 +16,7 @@ function Footer() {
               <img
                 src="/logominimodaks.png"
                 alt="minimodaks"
-                className="h-14 w-auto brightness-0 invert opacity-95 group-hover:opacity-100 transition-opacity"
+                className="h-14 w-auto max-w-[220px] brightness-0 invert opacity-95 group-hover:opacity-100 transition-opacity"
               />
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">

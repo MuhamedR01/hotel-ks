@@ -373,8 +373,7 @@ const ProductDetail = () => {
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-3">
                     <label className="block text-sm font-semibold text-gray-900">
-                      Zgjidhni Madhësinë{" "}
-                      <span className="text-red-500">*</span>
+                      Zgjidhni Madhësinë <span className="text-red-500">*</span>
                     </label>
                     {selectedSize && (
                       <span className="text-sm text-gray-500">
