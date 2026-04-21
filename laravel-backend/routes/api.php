@@ -22,6 +22,7 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // Products (public read)
 Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/categories', [ProductController::class, 'categories']);
 Route::get('/products/{id}', [ProductController::class, 'show'])->where('id', '[0-9]+');
 // Legacy endpoints — same controller, different URL
 Route::get('/get_products', [ProductController::class, 'index']);

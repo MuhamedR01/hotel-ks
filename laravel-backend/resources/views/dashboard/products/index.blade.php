@@ -11,22 +11,43 @@
 @endsection
 
 @section('content')
-    <!-- Filters -->
+    <!-- Category Pills -->
+    @if($categories->isNotEmpty())
+    <div class="mb-4">
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300">
+            <a href="{{ route('dashboard.products.index', array_filter(['search' => $search])) }}"
+               class="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-150
+                       {{ empty($category) ? 'bg-gray-800 text-white shadow' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-500' }}">
+                Të gjitha
+            </a>
+            @foreach($categories as $cat)
+            <a href="{{ route('dashboard.products.index', array_filter(['search' => $search, 'category' => $cat])) }}"
+               class="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-150
+                       {{ $category === $cat ? 'bg-gray-800 text-white shadow' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-500' }}">
+                {{ $cat }}
+            </a>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    <!-- Search -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
-        <form method="GET" class="space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Kërko</label>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Kërko produkte..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base">
-                </div>
-                <div class="sm:col-span-2 lg:col-span-1 flex items-end space-x-2">
-                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base">
-                        <i class="fas fa-search mr-2"></i>Kërko
-                    </button>
-                    <a href="{{ route('dashboard.products.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"><i class="fas fa-redo"></i></a>
-                </div>
+        <form method="GET" class="flex flex-wrap gap-3 items-end">
+            @if(!empty($category))
+                <input type="hidden" name="category" value="{{ $category }}">
+            @endif
+            <div class="flex-1 min-w-48">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Kërko</label>
+                <input type="text" name="search" value="{{ $search }}" placeholder="Kërko produkte..."
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
             </div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition-colors text-sm">
+                <i class="fas fa-search mr-1"></i>Kërko
+            </button>
+            <a href="{{ route('dashboard.products.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors text-sm">
+                <i class="fas fa-redo"></i>
+            </a>
         </form>
     </div>
 
@@ -38,6 +59,7 @@
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Produkti</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Kategoria</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Çmimi</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Stoku</th>
                         <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase w-36">Madhesia</th>
@@ -49,6 +71,13 @@
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                @if($product->category)
+                                    <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">{{ $product->category }}</span>
+                                @else
+                                    <span class="text-gray-400 text-xs">—</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 <span class="text-sm font-semibold text-gray-900">{{ number_format($product->price, 2) }}€</span>
@@ -84,7 +113,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500"><i class="fas fa-box-open text-4xl mb-2"></i><p>Nuk u gjetën produkte.</p></td></tr>
+                        <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500"><i class="fas fa-box-open text-4xl mb-2"></i><p>Nuk u gjetën produkte.</p></td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -97,6 +126,9 @@
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
                         <div class="flex-1 pr-4">
                             <h3 class="text-sm font-semibold text-gray-900 truncate">{{ $product->name }}</h3>
+                            @if($product->category)
+                                <span class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">{{ $product->category }}</span>
+                            @endif
                             <p class="text-sm text-gray-600 mt-1 sm:mt-0">{{ number_format($product->price, 2) }}€</p>
                         </div>
                         <div class="flex items-center space-x-3 mt-3 sm:mt-0 flex-shrink-0">

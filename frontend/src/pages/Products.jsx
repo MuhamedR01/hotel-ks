@@ -5,26 +5,24 @@ import { useCart } from "../context/CartContext";
 function Products() {
   const { addToCart } = useCart();
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("default");
 
   useEffect(() => {
+    const base = import.meta.env.VITE_API_BASE_URL || "/api";
+
     const fetchProducts = async () => {
       try {
-        const base = import.meta.env.VITE_API_BASE_URL || "/api";
         const res = await fetch(`${base}/products`);
         const data = await res.json();
-
-        if (!res.ok) {
-          console.error("Server error details:", data);
+        if (!res.ok)
           throw new Error(
             data.message || data.error || "Failed to fetch products",
           );
-        }
-
-        // Handle both old format (array) and new format (object with success property)
         const productsData = data.success ? data.products : data;
         setProducts(productsData);
       } catch (err) {
@@ -35,7 +33,20 @@ function Products() {
       }
     };
 
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${base}/products/categories`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.categories)) {
+          setCategories(data.categories);
+        }
+      } catch {
+        // categories are optional — fail silently
+      }
+    };
+
     fetchProducts();
+    fetchCategories();
   }, []);
 
   const handleAddToCart = (product) => {
@@ -62,9 +73,15 @@ function Products() {
   };
 
   const sortedProducts = useMemo(() => {
-    let filtered = products.filter((product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
+    let filtered = products.filter((product) => {
+      const matchesSearch = product.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "" ||
+        (product.category ?? "") === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
 
     switch (sortBy) {
       case "price-low":
@@ -76,7 +93,7 @@ function Products() {
       default:
         return filtered;
     }
-  }, [products, searchQuery, sortBy]);
+  }, [products, searchQuery, sortBy, selectedCategory]);
 
   if (loading) {
     return (
@@ -137,7 +154,40 @@ function Products() {
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          {/* Category pills */}
+          {categories.length > 0 && (
+            <div className="mb-5">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <button
+                  onClick={() => setSelectedCategory("")}
+                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-150 ${
+                    selectedCategory === ""
+                      ? "bg-gray-800 text-white shadow-sm"
+                      : "bg-white border border-gray-300 text-gray-700 hover:border-gray-500"
+                  }`}
+                >
+                  Të gjitha
+                </button>
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() =>
+                      setSelectedCategory(cat === selectedCategory ? "" : cat)
+                    }
+                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-150 ${
+                      selectedCategory === cat
+                        ? "bg-gray-800 text-white shadow-sm"
+                        : "bg-white border border-gray-300 text-gray-700 hover:border-gray-500"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Search */}
             <div>
@@ -271,6 +321,7 @@ function Products() {
               onClick={() => {
                 setSearchQuery("");
                 setSortBy("default");
+                setSelectedCategory("");
               }}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
             >

@@ -10,8 +10,9 @@ class DashboardProductController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
-        $perPage = 12;
+        $search   = $request->input('search', '');
+        $category = $request->input('category', '');
+        $perPage  = 12;
 
         $query = Product::query();
 
@@ -22,14 +23,29 @@ class DashboardProductController extends Controller
             });
         }
 
-        $products = $query->orderByDesc('created_at')->paginate($perPage);
+        if (!empty($category)) {
+            $query->where('category', $category);
+        }
 
-        return view('dashboard.products.index', compact('products', 'search'));
+        $products   = $query->orderByDesc('created_at')->paginate($perPage);
+        $categories = Product::whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
+        return view('dashboard.products.index', compact('products', 'search', 'category', 'categories'));
     }
 
     public function create()
     {
-        return view('dashboard.products.create');
+        $categories = Product::whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
+        return view('dashboard.products.create', compact('categories'));
     }
 
     public function store(Request $request)
@@ -44,10 +60,11 @@ class DashboardProductController extends Controller
         ]);
 
         $data = [
-            'name' => $request->name,
-            'price' => $request->price,
+            'name'        => $request->name,
+            'price'       => $request->price,
             'description' => $request->description ?? '',
-            'available' => (bool) $request->available,
+            'available'   => (bool) $request->available,
+            'category'    => $request->input('category', '') ?: null,
         ];
 
         if ($request->hasFile('images')) {
@@ -68,8 +85,14 @@ class DashboardProductController extends Controller
 
     public function edit(int $id)
     {
-        $product = Product::findOrFail($id);
-        return view('dashboard.products.edit', compact('product'));
+        $product    = Product::findOrFail($id);
+        $categories = Product::whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
+        return view('dashboard.products.edit', compact('product', 'categories'));
     }
 
     public function update(Request $request, int $id)
@@ -86,10 +109,11 @@ class DashboardProductController extends Controller
         ]);
 
         $data = [
-            'name' => $request->name,
-            'price' => $request->price,
+            'name'        => $request->name,
+            'price'       => $request->price,
             'description' => $request->description ?? '',
-            'available' => (bool) $request->available,
+            'available'   => (bool) $request->available,
+            'category'    => $request->input('category', '') ?: null,
         ];
 
         if ($request->hasFile('images')) {

@@ -10,17 +10,35 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     /**
-     * GET /api/products  — list all products (used by get_products.php)
+     * GET /api/products/categories — distinct non-null categories
+     */
+    public function categories(): JsonResponse
+    {
+        $categories = Product::whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
+        return response()->json(['success' => true, 'categories' => $categories]);
+    }
+
+    /**
+     * GET /api/products  — list all products
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Product::query();
-
-        $limit = $request->integer('limit');
-        $exclude = $request->integer('exclude');
+        $query    = Product::query();
+        $limit    = $request->integer('limit');
+        $exclude  = $request->integer('exclude');
+        $category = $request->input('category', '');
 
         if ($exclude) {
             $query->where('id', '!=', $exclude);
+        }
+
+        if ($category !== '') {
+            $query->where('category', $category);
         }
 
         $query->orderByDesc('created_at');
@@ -37,21 +55,19 @@ class ProductController extends Controller
             }
 
             return [
-                'id' => (int) $product->id,
-                'name' => $product->name,
+                'id'          => (int) $product->id,
+                'name'        => $product->name,
                 'description' => $product->description,
-                'price' => (float) $product->price,
-                'available' => $product->available ? 1 : 0,
-                'has_sizes' => $product->has_sizes ? 1 : 0,
-                'image' => $imageUrl,
-                'created_at' => $product->created_at?->toDateTimeString(),
+                'price'       => (float) $product->price,
+                'available'   => $product->available ? 1 : 0,
+                'has_sizes'   => $product->has_sizes ? 1 : 0,
+                'category'    => $product->category ?? '',
+                'image'       => $imageUrl,
+                'created_at'  => $product->created_at?->toDateTimeString(),
             ];
         });
 
-        return response()->json([
-            'success' => true,
-            'products' => $products,
-        ]);
+        return response()->json(['success' => true, 'products' => $products]);
     }
 
     /**
