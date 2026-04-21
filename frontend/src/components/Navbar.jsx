@@ -81,13 +81,10 @@ function Navbar() {
               onClick={closeMenu}
             >
               <img
-                src="/icon.svg"
+                src="/logominimodaks.png"
                 alt="minimodaks Logo"
-                className="w-10 h-10 transition-transform group-hover:scale-110 duration-200"
+                className="h-10 w-auto transition-transform group-hover:scale-110 duration-200"
               />
-              <span className="text-xl font-bold bg-gradient-to-r from-gray-700 to-gray-800 bg-clip-text text-transparent hidden sm:block">
-                minimodaks
-              </span>
             </Link>
           </div>
 

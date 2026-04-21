@@ -253,7 +253,10 @@ const ProductDetail = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
             {/* Images */}
             <div>
-              <div className="mb-4 rounded-lg overflow-hidden bg-gray-100 relative group" style={{minHeight: '24rem'}}>
+              <div
+                className="mb-4 rounded-lg overflow-hidden bg-gray-100 relative group"
+                style={{ minHeight: "24rem" }}
+              >
                 <img
                   src={currentImage}
                   alt={product.name}
