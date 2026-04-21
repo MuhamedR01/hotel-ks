@@ -12,11 +12,11 @@
                 <div class="relative">
                     <input type="text" name="search" value="{{ request('search') }}"
                         placeholder="Kërko sipas emrit, email, ID ose telefoni..."
-                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent">
                     <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                 </div>
             </div>
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button type="submit" class="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors">
                 <i class="fas fa-search mr-2"></i>Kërko
             </button>
             @if(request('search'))
@@ -46,7 +46,7 @@
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-10 w-10">
                                         <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <span class="text-blue-600 font-semibold text-lg">{{ strtoupper(substr($customer->name ?? 'U', 0, 1)) }}</span>
+                                            <span class="text-gray-900 font-semibold text-lg">{{ strtoupper(substr($customer->name ?? 'U', 0, 1)) }}</span>
                                         </div>
                                     </div>
                                     <div class="ml-4">

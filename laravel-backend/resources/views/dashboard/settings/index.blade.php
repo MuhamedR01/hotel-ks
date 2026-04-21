@@ -23,33 +23,33 @@
                         <div>
                             <label for="username" class="block text-sm font-medium text-gray-700 mb-2"><i class="fas fa-user mr-2"></i>Emri i Përdoruesit <span class="text-red-500">*</span></label>
                             <input type="text" id="username" name="username" required value="{{ old('username') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="username">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent" placeholder="username">
                             <p class="mt-1 text-xs text-gray-500">Përdoret për kyçje</p>
                         </div>
 
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-2"><i class="fas fa-id-card mr-2"></i>Emri i Plotë <span class="text-red-500">*</span></label>
                             <input type="text" id="name" name="name" required value="{{ old('name') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Emri Mbiemri">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent" placeholder="Emri Mbiemri">
                         </div>
 
                         <div>
                             <label for="email" class="block text-sm font-medium text-gray-700 mb-2"><i class="fas fa-envelope mr-2"></i>Email <span class="text-gray-400">(Opsionale)</span></label>
                             <input type="email" id="email" name="email" value="{{ old('email') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="email@example.com">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent" placeholder="email@example.com">
                             <p class="mt-1 text-xs text-gray-500">Mund të lihet bosh</p>
                         </div>
 
                         <div>
                             <label for="password" class="block text-sm font-medium text-gray-700 mb-2"><i class="fas fa-lock mr-2"></i>Fjalëkalimi <span class="text-red-500">*</span></label>
                             <input type="password" id="password" name="password" required minlength="6"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Min. 6 karaktere">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent" placeholder="Min. 6 karaktere">
                         </div>
 
                         <div>
                             <label for="role" class="block text-sm font-medium text-gray-700 mb-2"><i class="fas fa-user-tag mr-2"></i>Roli <span class="text-red-500">*</span></label>
                             <select id="role" name="role" required
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent">
                                 <option value="">Zgjidhni rolin</option>
                                 <option value="super_admin" {{ old('role') == 'super_admin' ? 'selected' : '' }}>Super Admin - Qasje e plotë</option>
                                 <option value="manager" {{ old('role') == 'manager' ? 'selected' : '' }}>Menaxher - Produktet & Porositë</option>
@@ -58,7 +58,7 @@
                         </div>
 
                         <div class="pt-2">
-                            <button type="submit" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                            <button type="submit" class="w-full bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-black transition-colors font-semibold">
                                 <i class="fas fa-plus mr-2"></i>Shto Admin
                             </button>
                         </div>

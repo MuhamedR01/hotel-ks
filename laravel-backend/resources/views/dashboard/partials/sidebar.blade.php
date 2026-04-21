@@ -3,17 +3,17 @@
     $role = Auth::guard('admin')->user()->role ?? 'super_admin';
 @endphp
 
-<aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full lg:translate-x-0 bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+<aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full lg:translate-x-0 bg-gray-950 text-gray-100 border-r border-gray-900">
     <div class="h-full px-3 py-4 overflow-y-auto">
         <!-- Logo -->
         <div class="flex items-center justify-between mb-8 px-3">
             <div class="flex items-center space-x-3">
-                <div class="bg-blue-600 w-10 h-10 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-hotel text-xl"></i>
+                <div class="bg-white w-11 h-11 rounded-lg flex items-center justify-center p-1.5 shadow-sm">
+                    <img src="/logominimodaks.png" alt="minimodaks" class="max-h-full w-auto object-contain">
                 </div>
                 <div>
-                    <h2 class="text-xl font-bold">minimodaks</h2>
-                    <p class="text-xs text-gray-400">Admin Panel</p>
+                    <h2 class="text-base font-bold tracking-wide">minimodaks</h2>
+                    <p class="text-xs text-gray-500">Admin Panel</p>
                 </div>
             </div>
             <button id="close-sidebar" class="lg:hidden text-gray-400 hover:text-white">

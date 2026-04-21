@@ -12,8 +12,8 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#2563eb',
-                        secondary: '#64748b',
+                        primary: '#111827',
+                        secondary: '#6b7280',
                     }
                 }
             }
@@ -24,10 +24,11 @@
         body { font-family: 'Inter', sans-serif; }
         .sidebar-link { transition: all 0.3s ease; }
         .sidebar-link.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #374151 0%, #111827 100%);
             color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,.25);
         }
-        .sidebar-link:not(.active):hover { background-color: #f3f4f6; }
+        .sidebar-link:not(.active):hover { background-color: rgba(255,255,255,0.06); }
         .stat-card { transition: all 0.3s ease; }
         .stat-card:hover {
             transform: translateY(-5px);
@@ -71,7 +72,7 @@
                             <p class="text-sm font-medium text-gray-800">{{ Auth::guard('admin')->user()->name ?? 'Admin' }}</p>
                             <p class="text-xs text-gray-500">{{ ucfirst(str_replace('_', ' ', Auth::guard('admin')->user()->role ?? 'admin')) }}</p>
                         </div>
-                        <div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center font-semibold">
+                        <div class="bg-blue-100 text-gray-900 w-10 h-10 rounded-full flex items-center justify-center font-semibold">
                             {{ strtoupper(substr(Auth::guard('admin')->user()->name ?? 'A', 0, 1)) }}
                         </div>
                     </div>

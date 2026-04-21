@@ -29,20 +29,20 @@
                 <div class="md:col-span-2">
                     <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Emri i Produktit <span class="text-red-500">*</span></label>
                     <input type="text" id="name" name="name" value="{{ old('name') }}" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500" 
                         placeholder="Shënoni emrin e produktit" required>
                 </div>
 
                 <div>
                     <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Çmimi (€) <span class="text-red-500">*</span></label>
                     <input type="number" step="0.01" id="price" name="price" value="{{ old('price') }}" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500" 
                         placeholder="0.00" required>
                 </div>
 
                 <div>
                     <label for="available" class="block text-sm font-medium text-gray-700 mb-1">Stoku</label>
-                    <select id="available" name="available" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="available" name="available" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500">
                         <option value="1" {{ old('available', '1') == '1' ? 'selected' : '' }}>Ne stok</option>
                         <option value="0" {{ old('available') == '0' ? 'selected' : '' }}>Pa stok</option>
                     </select>
@@ -52,7 +52,7 @@
                     <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Kategoria</label>
                     <input type="text" id="category" name="category" value="{{ old('category') }}"
                         list="categories-list"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                         placeholder="p.sh. Ushqim, Pije, Aksesore..."
                         autocomplete="off">
                     <datalist id="categories-list">
@@ -66,7 +66,7 @@
                 <div class="md:col-span-2">
                     <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Përshkrimi</label>
                     <textarea id="description" name="description" rows="4" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 resize-none" 
                         placeholder="Shkruani një përshkrim të produktit">{{ old('description') }}</textarea>
                 </div>
 
@@ -75,7 +75,7 @@
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div class="flex-1 w-full">
                             <input type="file" name="images[]" accept="image/*" id="imageInput" multiple required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500">
                             <p class="mt-2 text-sm text-gray-500">Formatet e lejuara: JPG, JPEG, PNG, GIF, WEBP (Max: 5MB per imazh)</p>
                         </div>
                         <div id="imagePreviews" class="preview-container"></div>
@@ -83,7 +83,7 @@
                 </div>
 
                 <div class="md:col-span-2 pt-4">
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200 flex items-center justify-center">
+                    <button type="submit" class="w-full bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 rounded-md transition-colors duration-200 flex items-center justify-center">
                         <i class="fas fa-plus-circle mr-2"></i>Shto Produktin
                     </button>
                 </div>

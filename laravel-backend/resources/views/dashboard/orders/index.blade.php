@@ -10,7 +10,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <div class="flex items-center justify-between">
                 <div><p class="text-xs sm:text-sm text-gray-600">Total</p><p class="text-lg sm:text-2xl font-bold text-gray-900">{{ $stats['total'] }}</p></div>
-                <div class="bg-blue-100 p-2 sm:p-3 rounded-lg"><i class="fas fa-shopping-cart text-blue-600 text-sm sm:text-lg"></i></div>
+                <div class="bg-blue-100 p-2 sm:p-3 rounded-lg"><i class="fas fa-shopping-cart text-gray-900 text-sm sm:text-lg"></i></div>
             </div>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
@@ -21,8 +21,8 @@
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <div class="flex items-center justify-between">
-                <div><p class="text-xs sm:text-sm text-gray-600">Duke procesuar</p><p class="text-lg sm:text-2xl font-bold text-blue-600">{{ $stats['processing'] }}</p></div>
-                <div class="bg-blue-100 p-2 sm:p-3 rounded-lg"><i class="fas fa-spinner text-blue-600 text-sm sm:text-lg"></i></div>
+                <div><p class="text-xs sm:text-sm text-gray-600">Duke procesuar</p><p class="text-lg sm:text-2xl font-bold text-gray-900">{{ $stats['processing'] }}</p></div>
+                <div class="bg-blue-100 p-2 sm:p-3 rounded-lg"><i class="fas fa-spinner text-gray-900 text-sm sm:text-lg"></i></div>
             </div>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
@@ -46,11 +46,11 @@
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Kërko</label>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Kërko porosi..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base">
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent text-sm sm:text-base">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Statusi</label>
-                    <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base">
+                    <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent text-sm sm:text-base">
                         <option value="">Të gjitha</option>
                         <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Në pritje</option>
                         <option value="processing" {{ request('status') === 'processing' ? 'selected' : '' }}>Duke procesuar</option>
@@ -59,7 +59,7 @@
                     </select>
                 </div>
                 <div class="flex items-end">
-                    <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
+                    <button type="submit" class="w-full bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-black transition-colors text-sm sm:text-base">
                         <i class="fas fa-filter mr-2"></i>Filtro
                     </button>
                 </div>
@@ -88,7 +88,7 @@
                     @endphp
                     @forelse($orders as $order)
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap"><span class="font-semibold text-blue-600">#{{ $order->order_number }}</span></td>
+                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap"><span class="font-semibold text-gray-900">#{{ $order->order_number }}</span></td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap"><span class="text-gray-900">{{ $order->items_count ?? $order->items->count() }} artikuj</span></td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap"><span class="font-bold text-gray-900">{{ number_format($order->total_amount, 2) }}€</span></td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
@@ -98,7 +98,7 @@
                             </td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $order->created_at->format('d/m/Y H:i') }}</td>
                             <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
-                                <a href="{{ route('dashboard.orders.show', $order->id) }}" class="text-blue-600 hover:text-blue-800 font-semibold"><i class="fas fa-eye mr-1"></i>Shiko</a>
+                                <a href="{{ route('dashboard.orders.show', $order->id) }}" class="text-gray-900 hover:text-blue-800 font-semibold"><i class="fas fa-eye mr-1"></i>Shiko</a>
                             </td>
                         </tr>
                     @empty

@@ -7,32 +7,32 @@ function Footer() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="bg-stone-100 text-gray-700 border-t border-stone-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Company Info */}
           <div className="space-y-4">
             <Link to="/" className="inline-flex items-center group">
               <img
                 src="/logominimodaks.png"
                 alt="minimodaks"
-                className="h-14 w-auto max-w-[220px] brightness-0 invert opacity-95 group-hover:opacity-100 transition-opacity"
+                className="h-20 w-auto object-contain transition-opacity group-hover:opacity-80"
               />
             </Link>
-            <p className="text-gray-400 text-sm leading-relaxed">
+            <p className="text-gray-600 text-sm leading-relaxed">
               Ofrojmë produkte dhe shërbime me cilësi të lartë për të gjithë
               klientët tanë.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-3">
               <a
                 href="https://www.facebook.com/share/1A7rtaiQdC/?mibextid=wwXIfr"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="w-9 h-9 rounded-full bg-white border border-stone-200 text-gray-600 hover:text-gray-900 hover:border-gray-900 flex items-center justify-center transition-colors"
                 aria-label="Facebook"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-4 h-4"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -43,11 +43,11 @@ function Footer() {
                 href="https://www.instagram.com/hotel.ks?igsh=ajAzcGd0cG8wZG02&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="w-9 h-9 rounded-full bg-white border border-stone-200 text-gray-600 hover:text-gray-900 hover:border-gray-900 flex items-center justify-center transition-colors"
                 aria-label="Instagram"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-4 h-4"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -58,11 +58,11 @@ function Footer() {
                 href="https://www.tiktok.com/@hotel.ks?_r=1&_t=ZM-92FaQ4nhZKS"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="w-9 h-9 rounded-full bg-white border border-stone-200 text-gray-600 hover:text-gray-900 hover:border-gray-900 flex items-center justify-center transition-colors"
                 aria-label="TikTok"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-4 h-4"
                   fill="currentColor"
                   viewBox="0 0 512 512"
                   aria-hidden="true"
@@ -78,12 +78,14 @@ function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Lidhje të Shpejta</h3>
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
+              Lidhje të Shpejta
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   to="/products"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
                 >
                   Produktet
                 </Link>
@@ -91,7 +93,7 @@ function Footer() {
               <li>
                 <Link
                   to="/contact"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
                 >
                   Kontakti
                 </Link>
@@ -101,12 +103,14 @@ function Footer() {
 
           {/* Customer Service */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Shërbimi Klientit</h3>
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
+              Shërbimi Klientit
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   to={isAuthenticated ? "/profile" : "/login"}
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
                 >
                   Llogaria Ime
                 </Link>
@@ -114,7 +118,7 @@ function Footer() {
               <li>
                 <Link
                   to="/cart"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
                 >
                   Shporta
                 </Link>
@@ -122,7 +126,7 @@ function Footer() {
               <li>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
                 >
                   Politika e Kthimit
                 </a>
@@ -132,7 +136,9 @@ function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Kontakti</h3>
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
+              Kontakti
+            </h3>
             <ul className="space-y-3">
               <li className="flex items-center space-x-3 text-sm">
                 <svg
@@ -150,7 +156,7 @@ function Footer() {
                 </svg>
                 <a
                   href="mailto:info@minimodaks.com"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   info@minimodaks.com
                 </a>
@@ -169,34 +175,29 @@ function Footer() {
                     d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                   />
                 </svg>
-                <a
-                  href="#"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Se shpejti
-                </a>
+                <span className="text-gray-600">Se shpejti</span>
               </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-8 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-gray-400 text-sm text-center md:text-left">
+        <div className="border-t border-stone-200 mt-10 pt-6">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0">
+            <p className="text-gray-500 text-sm text-center md:text-left">
               &copy; {currentYear} minimodaks. Të gjitha të drejtat e
               rezervuara.
             </p>
             <div className="flex space-x-6">
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors text-sm"
+                className="text-gray-500 hover:text-gray-900 transition-colors text-sm"
               >
                 Kushtet e Shërbimit
               </a>
               <Link
                 to="/policy"
-                className="text-gray-400 hover:text-white transition-colors text-sm"
+                className="text-gray-500 hover:text-gray-900 transition-colors text-sm"
               >
                 Politika e Privatësisë
               </Link>

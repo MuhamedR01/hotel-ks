@@ -5,7 +5,7 @@
 @section('page-subtitle', 'Menaxho produktet e dyqanit')
 
 @section('topbar-actions')
-    <a href="{{ route('dashboard.products.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base">
+    <a href="{{ route('dashboard.products.create') }}" class="bg-gray-900 hover:bg-black text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base">
         <i class="fas fa-plus mr-2"></i><span class="hidden sm:inline">Shto </span>Produkt
     </a>
 @endsection
@@ -40,9 +40,9 @@
             <div class="flex-1 min-w-48">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Kërko</label>
                 <input type="text" name="search" value="{{ $search }}" placeholder="Kërko produkte..."
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent text-sm">
             </div>
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition-colors text-sm">
+            <button type="submit" class="bg-gray-900 hover:bg-black text-white px-5 py-2 rounded-lg font-medium transition-colors text-sm">
                 <i class="fas fa-search mr-1"></i>Kërko
             </button>
             <a href="{{ route('dashboard.products.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors text-sm">
@@ -104,7 +104,7 @@
                             </td>
                             <td class="px-6 py-4 text-right align-middle">
                                 <div class="flex items-center justify-end space-x-3">
-                                    <a href="{{ route('dashboard.products.edit', $product->id) }}" class="text-blue-600 hover:text-blue-900 text-sm"><i class="fas fa-edit text-sm"></i></a>
+                                    <a href="{{ route('dashboard.products.edit', $product->id) }}" class="text-gray-900 hover:text-blue-900 text-sm"><i class="fas fa-edit text-sm"></i></a>
                                     <form method="POST" action="{{ route('dashboard.products.destroy', $product->id) }}" class="inline" onsubmit="return confirm('A jeni të sigurt që doni të fshini këtë produkt?')">
                                         @csrf
                                         <button type="submit" class="text-red-600 hover:text-red-900 text-sm"><i class="fas fa-trash text-sm"></i></button>
@@ -141,7 +141,7 @@
                                 </label>
                             </form>
                             <div class="flex items-center space-x-2 ml-2">
-                                <a href="{{ route('dashboard.products.edit', $product->id) }}" class="text-blue-600 hover:text-blue-900 text-sm"><i class="fas fa-edit"></i></a>
+                                <a href="{{ route('dashboard.products.edit', $product->id) }}" class="text-gray-900 hover:text-blue-900 text-sm"><i class="fas fa-edit"></i></a>
                                 <form method="POST" action="{{ route('dashboard.products.destroy', $product->id) }}" class="inline" onsubmit="return confirm('A jeni të sigurt?')">
                                     @csrf
                                     <button type="submit" class="text-red-600 hover:text-red-900 text-sm"><i class="fas fa-trash"></i></button>

@@ -7,12 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gradient-to-br from-stone-50 to-gray-100 min-h-screen flex items-center justify-center p-4">
     <div class="max-w-md w-full">
         <div class="bg-white rounded-2xl shadow-xl p-8">
             <!-- Logo -->
             <div class="text-center mb-8">
-                <div class="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center font-bold text-2xl mx-auto mb-4">
+                <div class="bg-gray-900 text-white w-16 h-16 rounded-full flex items-center justify-center font-bold text-2xl mx-auto mb-4">
                     KS
                 </div>
                 <h1 class="text-3xl font-bold text-gray-900">Admin Panel</h1>
@@ -48,7 +48,7 @@
                         <i class="fas fa-user mr-1"></i> Emri i Përdoruesit ose Email
                     </label>
                     <input type="text" id="username" name="username" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
                         placeholder="admin" autocomplete="username" value="{{ old('username') }}">
                 </div>
 
@@ -58,7 +58,7 @@
                     </label>
                     <div class="relative">
                         <input type="password" id="password" name="password" required
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all pr-12"
                             placeholder="••••••••" autocomplete="current-password">
                         <button type="button" onclick="togglePassword()"
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
@@ -68,7 +68,7 @@
                 </div>
 
                 <button type="submit"
-                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                    class="w-full bg-gray-900 text-white py-3 rounded-lg font-semibold hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
                     <i class="fas fa-sign-in-alt mr-2"></i> Kyçu
                 </button>
             </form>
