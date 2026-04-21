@@ -146,10 +146,10 @@ function Products() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Produktet Tona
+            <a href="https://minimodaks.com">MINIMODAKS</a>
           </h1>
           <p className="text-xl text-gray-600">
-            Zbuloni koleksionin tonë të produkteve me cilësi hoteli
+            CILESI E GARANTUAR QMIMET ME TE MIRA NE TREG.
           </p>
         </div>
 
