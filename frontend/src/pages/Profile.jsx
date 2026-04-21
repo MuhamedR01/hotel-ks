@@ -139,7 +139,7 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700 mx-auto"></div>
           <p className="mt-4 text-gray-600">Duke ngarkuar profilin...</p>
         </div>
       </div>
@@ -151,10 +151,10 @@ const Profile = () => {
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-12">
+          <div className="bg-gradient-to-r from-gray-700 to-gray-900 px-8 py-12">
             <div className="flex items-center space-x-4">
               <div className="bg-white rounded-full p-4">
-                <User className="w-12 h-12 text-blue-600" />
+                <User className="w-12 h-12 text-gray-800" />
               </div>
               <div className="text-white">
                 <h1 className="text-3xl font-bold">{formData.name || 'Përdoruesi'}</h1>
@@ -200,10 +200,10 @@ const Profile = () => {
                     type="text"
                     value={formData.unique_id}
                     disabled
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed font-mono text-lg font-semibold text-blue-600"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed font-mono text-lg font-semibold text-gray-800"
                   />
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-blue-800">
                       Vetëm për lexim
                     </span>
                   </div>
@@ -227,7 +227,7 @@ const Profile = () => {
                   value={formData.name}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                     errors.name ? 'border-red-500' : 'border-gray-300'
                   } ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                   placeholder="Shkruani emrin tuaj"
@@ -266,7 +266,7 @@ const Profile = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                     errors.phone ? 'border-red-500' : 'border-gray-300'
                   } ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                   placeholder="+355 69 123 4567"
@@ -289,7 +289,7 @@ const Profile = () => {
                   value={formData.address}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                     !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
                   }`}
                   placeholder="Rruga e Durrësit"
@@ -309,7 +309,7 @@ const Profile = () => {
                   value={formData.city}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                     !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
                   }`}
                   placeholder="Tiranë"
@@ -329,7 +329,7 @@ const Profile = () => {
                   value={formData.country}
                   onChange={handleChange}
                   disabled={!isEditing}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                     !isEditing ? 'bg-gray-50 cursor-not-allowed' : ''
                   }`}
                   placeholder="Shqipëri"
@@ -351,7 +351,7 @@ const Profile = () => {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSaving ? 'Duke ruajtur...' : 'Ruaj Ndryshimet'}
                   </button>
@@ -360,7 +360,7 @@ const Profile = () => {
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors"
                 >
                   Ndrysho Profilin
                 </button>

@@ -99,7 +99,7 @@ function Products() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center w-full">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4 mx-auto"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-700 mb-4 mx-auto"></div>
           <p className="text-xl text-gray-600">Duke ngarkuar produktet...</p>
         </div>
       </div>
@@ -131,7 +131,7 @@ function Products() {
           </div>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors"
           >
             Provo Përsëri
           </button>
@@ -199,7 +199,7 @@ function Products() {
                 placeholder="Kërko produkte..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               />
             </div>
 
@@ -211,7 +211,7 @@ function Products() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               >
                 <option value="default">Të parazgjedhura</option>
                 <option value="price-low">Çmimi: nga i ulët në të lartë</option>
@@ -260,14 +260,14 @@ function Products() {
                   )}
                 </div>
                 <div className="p-3 sm:p-5">
-                  <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                  <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-2 group-hover:text-gray-800 transition-colors line-clamp-2">
                     {product.name}
                   </h3>
                   <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 hidden sm:block">
                     {product.description}
                   </p>
                   <div className="flex items-center justify-between mb-2 sm:mb-3">
-                    <span className="text-lg sm:text-2xl font-bold text-blue-600">
+                    <span className="text-lg sm:text-2xl font-bold text-gray-800">
                       €{Number(product.price).toFixed(2)}
                     </span>
                     {(product.available ?? true) && (
@@ -286,7 +286,7 @@ function Products() {
                     disabled={!(product.available ?? true)}
                     className={`w-full py-2 rounded-lg transition-colors font-semibold text-sm ${
                       (product.available ?? true)
-                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        ? "bg-gray-800 hover:bg-gray-900 text-white"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                   >
@@ -323,7 +323,7 @@ function Products() {
                 setSortBy("default");
                 setSelectedCategory("");
               }}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-semibold"
             >
               Pastroni Filtrat
             </button>

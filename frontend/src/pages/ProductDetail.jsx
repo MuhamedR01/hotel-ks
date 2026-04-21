@@ -168,7 +168,7 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-gray-700 mx-auto mb-4"></div>
           <p className="text-xl text-gray-600">
             Duke ngarkuar detajet e produktit...
           </p>
@@ -205,7 +205,7 @@ const ProductDetail = () => {
           <div className="flex gap-4 justify-center">
             <Link
               to="/products"
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-semibold"
             >
               Kthehu te Produktet
             </Link>
@@ -233,13 +233,13 @@ const ProductDetail = () => {
         <nav className="mb-8 text-sm">
           <ol className="flex items-center space-x-2 text-gray-600">
             <li>
-              <Link to="/" className="hover:text-blue-600">
+              <Link to="/" className="hover:text-gray-800">
                 Ballina
               </Link>
             </li>
             <li>/</li>
             <li>
-              <Link to="/products" className="hover:text-blue-600">
+              <Link to="/products" className="hover:text-gray-800">
                 Produktet
               </Link>
             </li>
@@ -299,7 +299,7 @@ const ProductDetail = () => {
                       onClick={() => setSelectedImage(index)}
                       className={`rounded-lg overflow-hidden border-2 transition-all ${
                         selectedImage === index
-                          ? "border-blue-600 ring-2 ring-blue-200"
+                          ? "border-gray-800 ring-2 ring-gray-200"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
@@ -321,7 +321,7 @@ const ProductDetail = () => {
             {/* Product Info */}
             <div>
               <div className="mb-4">
-                <span className="inline-block px-3 py-1 bg-blue-100 text-blue-600 text-sm font-semibold rounded-full uppercase">
+                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-800 text-sm font-semibold rounded-full uppercase">
                   {product.category || "Produkt"}
                 </span>
               </div>
@@ -331,7 +331,7 @@ const ProductDetail = () => {
               </h1>
 
               <div className="mb-6">
-                <span className="text-4xl font-bold text-blue-600">
+                <span className="text-4xl font-bold text-gray-800">
                   €{parseFloat(product.price).toFixed(2)}
                 </span>
                 {isAvailable ? (
@@ -379,8 +379,8 @@ const ProductDetail = () => {
                             min-w-[60px] px-4 py-3 border-2 rounded-lg font-semibold transition-all
                             ${
                               isSelected
-                                ? "bg-blue-600 text-white border-blue-600 shadow-md scale-105"
-                                : "bg-white text-gray-700 border-gray-300 hover:border-blue-600 hover:shadow-sm"
+                                ? "bg-gray-800 text-white border-gray-800 shadow-md scale-105"
+                                : "bg-white text-gray-700 border-gray-300 hover:border-gray-700 hover:shadow-sm"
                             }
                           `}
                         >
@@ -408,7 +408,7 @@ const ProductDetail = () => {
                 <div className="flex items-center space-x-4">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 rounded-lg border-2 border-gray-300 hover:border-blue-600 flex items-center justify-center font-semibold transition-colors"
+                    className="w-10 h-10 rounded-lg border-2 border-gray-300 hover:border-gray-700 flex items-center justify-center font-semibold transition-colors"
                   >
                     -
                   </button>
@@ -417,7 +417,7 @@ const ProductDetail = () => {
                   </span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-10 rounded-lg border-2 border-gray-300 hover:border-blue-600 flex items-center justify-center font-semibold transition-colors"
+                    className="w-10 h-10 rounded-lg border-2 border-gray-300 hover:border-gray-700 flex items-center justify-center font-semibold transition-colors"
                     disabled={!isAvailable}
                   >
                     +
@@ -433,7 +433,7 @@ const ProductDetail = () => {
                 <button
                   onClick={handleAddToCart}
                   disabled={!isAvailable}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="flex-1 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   <i className="fas fa-shopping-cart mr-2"></i>
                   Shto në Shportë

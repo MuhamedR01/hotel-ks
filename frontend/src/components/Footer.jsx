@@ -18,7 +18,7 @@ function Footer() {
                 alt="minimodaks Logo"
                 className="w-10 h-10 transition-transform group-hover:scale-110 duration-200"
               />
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-gray-700 to-gray-800 bg-clip-text text-transparent">
                 minimodaks
               </span>
             </Link>
@@ -31,7 +31,7 @@ function Footer() {
                 href="https://www.facebook.com/share/1A7rtaiQdC/?mibextid=wwXIfr"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-blue-500 transition-colors"
+                className="text-gray-400 hover:text-gray-500 transition-colors"
                 aria-label="Facebook"
               >
                 <svg
@@ -139,7 +139,7 @@ function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center space-x-3 text-sm">
                 <svg
-                  className="w-5 h-5 text-blue-500 flex-shrink-0"
+                  className="w-5 h-5 text-gray-500 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -160,7 +160,7 @@ function Footer() {
               </li>
               <li className="flex items-center space-x-3 text-sm">
                 <svg
-                  className="w-5 h-5 text-blue-500 flex-shrink-0"
+                  className="w-5 h-5 text-gray-500 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -187,7 +187,8 @@ function Footer() {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-400 text-sm text-center md:text-left">
-              &copy; {currentYear} minimodaks. Të gjitha të drejtat e rezervuara.
+              &copy; {currentYear} minimodaks. Të gjitha të drejtat e
+              rezervuara.
             </p>
             <div className="flex space-x-6">
               <a

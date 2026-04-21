@@ -65,7 +65,7 @@ function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={toggleMenu}
-              className="md:hidden text-gray-700 hover:text-blue-600 transition-colors"
+              className="md:hidden text-gray-700 hover:text-gray-800 transition-colors"
             >
               {isMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -85,7 +85,7 @@ function Navbar() {
                 alt="minimodaks Logo"
                 className="w-10 h-10 transition-transform group-hover:scale-110 duration-200"
               />
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent hidden sm:block">
+              <span className="text-xl font-bold bg-gradient-to-r from-gray-700 to-gray-800 bg-clip-text text-transparent hidden sm:block">
                 minimodaks
               </span>
             </Link>
@@ -95,13 +95,13 @@ function Navbar() {
           <div className="hidden md:flex items-center space-x-8">
             <Link
               to="/"
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              className="text-gray-700 hover:text-gray-800 transition-colors font-medium"
             >
               Produktet
             </Link>
             <Link
               to="/contact"
-              className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              className="text-gray-700 hover:text-gray-800 transition-colors font-medium"
             >
               Kontakti
             </Link>
@@ -114,7 +114,7 @@ function Navbar() {
               <div className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <ShoppingCart className="w-6 h-6 text-gray-700" />
                 {cartItemsCount > 0 && (
-                  <span className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute top-0 right-0 bg-gray-800 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                     {cartItemsCount > 9 ? "9+" : cartItemsCount}
                   </span>
                 )}
@@ -125,9 +125,9 @@ function Navbar() {
             <Link to="/cart" className="hidden md:block relative group">
               <div className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                 <div className="relative">
-                  <ShoppingCart className="w-6 h-6 text-gray-700 group-hover:text-blue-600 transition-colors" />
+                  <ShoppingCart className="w-6 h-6 text-gray-700 group-hover:text-gray-800 transition-colors" />
                   {cartItemsCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute -top-2 -right-2 bg-gray-800 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                       {cartItemsCount > 9 ? "9+" : cartItemsCount}
                     </span>
                   )}
@@ -149,7 +149,7 @@ function Navbar() {
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-full flex items-center justify-center font-semibold">
+                    <div className="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-900 text-white rounded-full flex items-center justify-center font-semibold">
                       {user.name ? user.name.charAt(0).toUpperCase() : "U"}
                     </div>
                     <span className="font-medium text-gray-700">
@@ -211,13 +211,13 @@ function Navbar() {
                 <div className="flex items-center space-x-2">
                   <Link
                     to="/login"
-                    className="px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors font-medium"
+                    className="px-4 py-2 text-gray-700 hover:text-gray-800 transition-colors font-medium"
                   >
                     Kyçu
                   </Link>
                   <Link
                     to="/signup"
-                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium shadow-md hover:shadow-lg"
+                    className="px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-800 text-white rounded-lg hover:from-gray-800 hover:to-gray-900 transition-all font-medium shadow-md hover:shadow-lg"
                   >
                     Regjistrohu
                   </Link>
@@ -235,14 +235,14 @@ function Navbar() {
             <Link
               to="/"
               onClick={closeMenu}
-              className="block text-gray-700 hover:text-blue-600 transition-colors font-medium py-2"
+              className="block text-gray-700 hover:text-gray-800 transition-colors font-medium py-2"
             >
               Produktet
             </Link>
             <Link
               to="/contact"
               onClick={closeMenu}
-              className="block text-gray-700 hover:text-blue-600 transition-colors font-medium py-2"
+              className="block text-gray-700 hover:text-gray-800 transition-colors font-medium py-2"
             >
               Kontakti
             </Link>
@@ -258,11 +258,11 @@ function Navbar() {
                 <span className="text-gray-700 font-medium">Shporta</span>
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-bold text-blue-600">
+                <span className="text-sm font-bold text-gray-800">
                   €{cartTotal.toFixed(2)}
                 </span>
                 {cartItemsCount > 0 && (
-                  <span className="bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="bg-gray-800 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                     {cartItemsCount}
                   </span>
                 )}
@@ -275,7 +275,7 @@ function Navbar() {
                   <Link
                     to="/profile"
                     onClick={closeMenu}
-                    className="flex items-center space-x-3 text-gray-700 hover:text-blue-600 transition-colors font-medium py-2"
+                    className="flex items-center space-x-3 text-gray-700 hover:text-gray-800 transition-colors font-medium py-2"
                   >
                     <User className="w-5 h-5" />
                     <span>Profili Im</span>
@@ -297,14 +297,14 @@ function Navbar() {
                   <Link
                     to="/login"
                     onClick={closeMenu}
-                    className="block text-center px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors font-medium"
+                    className="block text-center px-4 py-2 text-gray-700 hover:text-gray-800 transition-colors font-medium"
                   >
                     Kyçu
                   </Link>
                   <Link
                     to="/signup"
                     onClick={closeMenu}
-                    className="block text-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium shadow-md hover:shadow-lg"
+                    className="block text-center px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-800 text-white rounded-lg hover:from-gray-800 hover:to-gray-900 transition-all font-medium shadow-md hover:shadow-lg"
                   >
                     Regjistrohu
                   </Link>

@@ -95,7 +95,7 @@ const Login = () => {
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
-            <div className="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center font-bold text-2xl mx-auto mb-4">
+            <div className="bg-gray-800 text-white w-16 h-16 rounded-full flex items-center justify-center font-bold text-2xl mx-auto mb-4">
               KS
             </div>
             <h2 className="text-3xl font-bold text-gray-900">Mirë se vini përsëri</h2>
@@ -128,7 +128,7 @@ const Login = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                   errors.email ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="email@example.com"
@@ -148,7 +148,7 @@ const Login = () => {
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                   errors.password ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="••••••••"
@@ -164,7 +164,7 @@ const Login = () => {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-gray-800 focus:ring-gray-500 border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                   Më mbaj mend
@@ -172,7 +172,7 @@ const Login = () => {
               </div>
 
               <div className="text-sm">
-                <Link to="/forgot-password" className="text-blue-600 hover:text-blue-700 font-semibold">
+                <Link to="/forgot-password" className="text-gray-800 hover:text-gray-900 font-semibold">
                   Keni harruar fjalëkalimin?
                 </Link>
               </div>
@@ -181,7 +181,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="w-full bg-gray-800 text-white py-3 rounded-lg hover:bg-gray-900 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
                 <>
@@ -200,7 +200,7 @@ const Login = () => {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Nuk keni llogari?{' '}
-              <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
+              <Link to="/signup" className="text-gray-800 hover:text-gray-900 font-semibold">
                 Regjistrohuni
               </Link>
             </p>

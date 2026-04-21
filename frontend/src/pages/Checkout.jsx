@@ -284,7 +284,7 @@ function Checkout() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700 mx-auto"></div>
           <p className="mt-4 text-gray-600">Duke ngarkuar...</p>
         </div>
       </div>
@@ -345,7 +345,7 @@ function Checkout() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent ${
                         errors.name ? "border-red-500" : "border-gray-300"
                       }`}
                       placeholder="Emri dhe Mbiemri"
@@ -367,7 +367,7 @@ function Checkout() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent ${
                         errors.phone ? "border-red-500" : "border-gray-300"
                       }`}
                       placeholder="+383 XX XXX XXX"
@@ -389,7 +389,7 @@ function Checkout() {
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent ${
                         errors.address ? "border-red-500" : "border-gray-300"
                       }`}
                       placeholder="Rruga, Numri i Shtëpisë"
@@ -412,7 +412,7 @@ function Checkout() {
                         name="city"
                         value={formData.city}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent ${
                           errors.city ? "border-red-500" : "border-gray-300"
                         }`}
                         placeholder="Qyteti"
@@ -432,7 +432,7 @@ function Checkout() {
                         name="country"
                         value={formData.country}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent ${
                           errors.country ? "border-red-500" : "border-gray-300"
                         }`}
                       >
@@ -460,7 +460,7 @@ function Checkout() {
                       value={formData.notes}
                       onChange={handleInputChange}
                       rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                       placeholder="Shënime për porosinë..."
                     ></textarea>
                   </div>
@@ -473,13 +473,13 @@ function Checkout() {
                         name="acceptedPolicy"
                         checked={formData.acceptedPolicy}
                         onChange={handleInputChange}
-                        className={`mt-1 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500 ${
+                        className={`mt-1 h-4 w-4 text-gray-800 rounded border-gray-300 focus:ring-2 focus:ring-gray-500 ${
                           errors.acceptedPolicy ? "ring-2 ring-red-500" : ""
                         }`}
                       />
                       <span className="text-sm text-gray-700">
                         Kam lexuar dhe pranoj{" "}
-                        <a href="/policy" className="text-blue-600 underline">
+                        <a href="/policy" className="text-gray-800 underline">
                           Politikën e Privatësisë
                         </a>
                         <span className="text-red-500">*</span>
@@ -496,7 +496,7 @@ function Checkout() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center"
+                  className="mt-8 w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-4 rounded-lg transition duration-200 flex items-center justify-center"
                 >
                   {loading ? (
                     <>

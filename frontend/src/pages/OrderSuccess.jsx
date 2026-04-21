@@ -27,7 +27,7 @@ function OrderSuccess() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700 mx-auto"></div>
           <p className="mt-4 text-gray-600">Duke ngarkuar...</p>
         </div>
       </div>
@@ -56,11 +56,11 @@ function OrderSuccess() {
             </div>
 
             {/* Order Number */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="bg-gray-50 border border-blue-200 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Numri i Porosisë</p>
-                  <p className="text-2xl font-bold text-blue-600">#{orderData.orderNumber}</p>
+                  <p className="text-2xl font-bold text-gray-800">#{orderData.orderNumber}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-600">Data</p>
@@ -155,7 +155,7 @@ function OrderSuccess() {
           <div className="text-center">
             <Link
               to="/"
-              className="inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
+              className="inline-flex items-center justify-center space-x-2 bg-gray-800 hover:bg-gray-900 text-white font-semibold py-4 px-8 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />

@@ -114,7 +114,9 @@ const PolicyPage = () => {
             Për pyetje ose kërkesa në lidhje me privatësinë, ju lutemi
             kontaktoni:
           </p>
-          <p className="text-gray-700 font-medium">Email: info@minimodaks.com</p>
+          <p className="text-gray-700 font-medium">
+            Email: info@minimodaks.com
+          </p>
 
           <h2 className="text-lg font-semibold mt-6 mb-2">
             11. Ndryshimet në politikë

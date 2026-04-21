@@ -1,4 +1,4 @@
-
+﻿
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -120,7 +120,7 @@ function Signup() {
         <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 md:p-10">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center font-bold text-2xl mx-auto mb-4">
+            <div className="bg-gray-800 text-white w-16 h-16 rounded-full flex items-center justify-center font-bold text-2xl mx-auto mb-4">
               KS
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Krijoni një llogari</h2>
@@ -151,7 +151,7 @@ function Signup() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Shkruani emrin tuaj"
@@ -173,7 +173,7 @@ function Signup() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                   errors.email ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="email@example.com"
@@ -194,7 +194,7 @@ function Signup() {
                 type="tel"
                 value={formData.phone}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                   errors.phone ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="+355 69 123 4567"
@@ -215,7 +215,7 @@ function Signup() {
                 type="text"
                 value={formData.address}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
                 placeholder="Rruga e Durrësit"
               />
             </div>
@@ -233,7 +233,7 @@ function Signup() {
                   type="text"
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
                   placeholder="Tiranë"
                 />
               </div>
@@ -249,7 +249,7 @@ function Signup() {
                   type="text"
                   value={formData.country}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
                   placeholder="Shqipëri"
                 />
               </div>
@@ -269,7 +269,7 @@ function Signup() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                     errors.password ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Të paktën 6 karaktere"
@@ -291,7 +291,7 @@ function Signup() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all ${
                     errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Shkruani përsëri fjalëkalimin"
@@ -305,7 +305,7 @@ function Signup() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
+              className="w-full bg-gray-800 text-white py-3 rounded-lg font-semibold hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">
@@ -324,7 +324,7 @@ function Signup() {
           <div className="mt-6 text-center">
             <p className="text-gray-600 text-sm">
               Keni tashmë llogari?{' '}
-              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
+              <Link to="/login" className="text-gray-800 hover:text-gray-900 font-semibold">
                 Kyçuni
               </Link>
             </p>

@@ -51,7 +51,7 @@ function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20">
+      <section className="bg-gradient-to-r from-gray-700 to-gray-900 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
@@ -63,13 +63,13 @@ function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/products"
-                className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition duration-300"
+                className="bg-white text-gray-800 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition duration-300"
               >
                 Shfleto Produktet
               </Link>
               <Link
                 to="/about"
-                className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition duration-300"
+                className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-gray-800 transition duration-300"
               >
                 Mëso Më Shumë
               </Link>
@@ -91,9 +91,9 @@ function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-6">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg
-                  className="w-8 h-8 text-blue-600"
+                  className="w-8 h-8 text-gray-800"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -173,7 +173,7 @@ function Home() {
             </div>
             <Link
               to="/products"
-              className="hidden md:block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              className="hidden md:block px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-semibold"
             >
               Shiko të Gjitha
             </Link>
@@ -181,7 +181,7 @@ function Home() {
 
           {loading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-700"></div>
             </div>
           ) : error ? (
             <div className="text-center py-12">
@@ -206,7 +206,7 @@ function Home() {
               </div>
               <button
                 onClick={() => window.location.reload()}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors"
               >
                 Provo Përsëri
               </button>
@@ -234,7 +234,7 @@ function Home() {
               </p>
               <Link
                 to="/products"
-                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                className="inline-block px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-semibold"
               >
                 Shiko të Gjitha Produktet
               </Link>
@@ -252,21 +252,21 @@ function Home() {
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
-                    <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    <div className="absolute top-4 right-4 bg-gray-800 text-white px-3 py-1 rounded-full text-sm font-semibold">
                       Këshilluar
                     </div>
                   </div>
                   <div className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-gray-800 transition-colors">
                       {product.name}
                     </h3>
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-blue-600">
+                      <span className="text-2xl font-bold text-gray-800">
                         {product.price}€
                       </span>
                       <button
                         onClick={(e) => handleAddToCart(product, e)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
+                        className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors text-sm font-semibold"
                       >
                         Shto në Shportë
                       </button>
@@ -280,7 +280,7 @@ function Home() {
           <div className="text-center mt-12 md:hidden">
             <Link
               to="/products"
-              className="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              className="inline-block px-8 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-semibold"
             >
               Shiko të Gjitha Produktet
             </Link>
@@ -289,7 +289,7 @@ function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+      <section className="py-20 bg-gradient-to-r from-gray-700 to-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Gati për të Përmirësuar Shtëpinë tënde?
@@ -300,7 +300,7 @@ function Home() {
           </p>
           <Link
             to="/signup"
-            className="inline-block px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg"
+            className="inline-block px-8 py-4 bg-white text-gray-800 rounded-lg font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
           >
             Filloni Sot
           </Link>

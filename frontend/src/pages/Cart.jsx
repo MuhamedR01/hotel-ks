@@ -151,7 +151,7 @@ const Cart = () => {
             </p>
             <Link
               to="/products"
-              className="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              className="inline-block px-8 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-semibold"
             >
               Vazhdo Blerjen
             </Link>
@@ -241,7 +241,7 @@ const Cart = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-gray-100 text-blue-800">
                               {(() => {
                                 if (
                                   !item.selectedSize &&
@@ -282,7 +282,7 @@ const Cart = () => {
                                     item.selectedSize,
                                   )
                                 }
-                                className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
+                                className="w-8 h-8 rounded-lg border border-gray-300 hover:border-gray-700 hover:bg-gray-50 flex items-center justify-center transition-colors"
                                 disabled={item.quantity <= 1}
                               >
                                 <Minus className="w-4 h-4" />
@@ -298,7 +298,7 @@ const Cart = () => {
                                     item.selectedSize,
                                   )
                                 }
-                                className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
+                                className="w-8 h-8 rounded-lg border border-gray-300 hover:border-gray-700 hover:bg-gray-50 flex items-center justify-center transition-colors"
                               >
                                 <Plus className="w-4 h-4" />
                               </button>
@@ -355,7 +355,7 @@ const Cart = () => {
                             <span className="text-sm text-gray-600">
                               Madhësia:
                             </span>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-blue-800">
                               {(() => {
                                 if (
                                   !item.selectedSize &&
@@ -381,7 +381,7 @@ const Cart = () => {
                               })()}
                             </span>
                           </div>
-                          <p className="text-lg font-bold text-blue-600">
+                          <p className="text-lg font-bold text-gray-800">
                             €{parseFloat(item.price).toFixed(2)}
                           </p>
                         </div>
@@ -397,7 +397,7 @@ const Cart = () => {
                                 item.selectedSize,
                               )
                             }
-                            className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
+                            className="w-8 h-8 rounded-lg border border-gray-300 hover:border-gray-700 hover:bg-gray-50 flex items-center justify-center transition-colors"
                             disabled={item.quantity <= 1}
                           >
                             <Minus className="w-4 h-4" />
@@ -413,7 +413,7 @@ const Cart = () => {
                                 item.selectedSize,
                               )
                             }
-                            className="w-8 h-8 rounded-lg border border-gray-300 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors"
+                            className="w-8 h-8 rounded-lg border border-gray-300 hover:border-gray-700 hover:bg-gray-50 flex items-center justify-center transition-colors"
                           >
                             <Plus className="w-4 h-4" />
                           </button>
@@ -468,7 +468,7 @@ const Cart = () => {
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
                     placeholder="Vendosni kodin"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                   />
                   <button
                     onClick={handleApplyPromo}
@@ -497,7 +497,7 @@ const Cart = () => {
                   <span>Dërgesa</span>
                   <span>
                     {shipping === null ? (
-                      <Link to="/checkout" className="text-blue-600 underline">
+                      <Link to="/checkout" className="text-gray-800 underline">
                         Do të llogaritet në përfundim
                       </Link>
                     ) : shipping === 0 ? (
@@ -534,7 +534,7 @@ const Cart = () => {
               {/* Checkout Button */}
               <button
                 onClick={handleCheckout}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-semibold mb-3"
+                className="w-full bg-gray-800 text-white py-3 rounded-lg hover:bg-gray-900 transition-colors duration-200 font-semibold mb-3"
               >
                 Vazhdo në Pagesë
               </button>
