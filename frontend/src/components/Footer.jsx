@@ -12,17 +12,14 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center space-x-2">
+            <Link to="/" className="inline-flex items-center group">
               <img
-                src="/icon.svg"
-                alt="minimodaks Logo"
-                className="w-10 h-10 transition-transform group-hover:scale-110 duration-200"
+                src="/logominimodaks.png"
+                alt="minimodaks"
+                className="h-14 w-auto brightness-0 invert opacity-95 group-hover:opacity-100 transition-opacity"
               />
-              <span className="text-xl font-bold bg-gradient-to-r from-gray-700 to-gray-800 bg-clip-text text-transparent">
-                minimodaks
-              </span>
             </Link>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 text-sm leading-relaxed">
               Ofrojmë produkte dhe shërbime me cilësi të lartë për të gjithë
               klientët tanë.
             </p>
@@ -31,7 +28,7 @@ function Footer() {
                 href="https://www.facebook.com/share/1A7rtaiQdC/?mibextid=wwXIfr"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-gray-500 transition-colors"
+                className="text-gray-400 hover:text-white transition-colors"
                 aria-label="Facebook"
               >
                 <svg
@@ -46,7 +43,7 @@ function Footer() {
                 href="https://www.instagram.com/hotel.ks?igsh=ajAzcGd0cG8wZG02&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-pink-500 transition-colors"
+                className="text-gray-400 hover:text-white transition-colors"
                 aria-label="Instagram"
               >
                 <svg
@@ -61,7 +58,7 @@ function Footer() {
                 href="https://www.tiktok.com/@hotel.ks?_r=1&_t=ZM-92FaQ4nhZKS"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-black transition-colors"
+                className="text-gray-400 hover:text-white transition-colors"
                 aria-label="TikTok"
               >
                 <svg

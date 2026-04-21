@@ -1,5 +1,16 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ShoppingCart,
+  Zap,
+  Check,
+  Minus,
+  Plus,
+  ShieldCheck,
+  Truck,
+  RotateCcw,
+} from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useState, useEffect } from "react";
 
@@ -227,40 +238,42 @@ const ProductDetail = () => {
       : product.image || "https://via.placeholder.com/800x600?text=No+Image";
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-8 sm:py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Breadcrumb */}
-        <nav className="mb-8 text-sm">
-          <ol className="flex items-center space-x-2 text-gray-600">
+        <nav className="mb-6 text-sm">
+          <ol className="flex items-center gap-2 text-gray-500">
             <li>
-              <Link to="/" className="hover:text-gray-800">
+              <Link to="/" className="hover:text-gray-900 transition-colors">
                 Ballina
               </Link>
             </li>
-            <li>/</li>
+            <ChevronRight className="w-3.5 h-3.5" />
             <li>
-              <Link to="/products" className="hover:text-gray-800">
+              <Link
+                to="/products"
+                className="hover:text-gray-900 transition-colors"
+              >
                 Produktet
               </Link>
             </li>
-            <li>/</li>
-            <li className="text-gray-900 font-semibold">{product.name}</li>
+            <ChevronRight className="w-3.5 h-3.5" />
+            <li className="text-gray-900 font-medium truncate max-w-[40vw]">
+              {product.name}
+            </li>
           </ol>
         </nav>
 
         {/* Product Details */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
+        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 p-4 sm:p-6 lg:p-10">
             {/* Images */}
-            <div>
-              <div
-                className="mb-4 rounded-lg overflow-hidden bg-gray-100 relative group"
-                style={{ minHeight: "24rem" }}
-              >
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              <div className="mb-4 rounded-2xl overflow-hidden bg-gray-50 relative group aspect-square">
                 <img
                   src={currentImage}
                   alt={product.name}
-                  className="w-full h-96 object-contain p-2"
+                  className="w-full h-full object-contain p-4 sm:p-6 transition-transform duration-300"
                   onError={(e) => {
                     e.target.src =
                       "https://via.placeholder.com/800x600?text=No+Image";
@@ -272,21 +285,21 @@ const ProductDetail = () => {
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-2.5 rounded-full shadow-md ring-1 ring-gray-200 opacity-0 group-hover:opacity-100 transition-all duration-300"
                       aria-label="Previous image"
                     >
-                      <ChevronLeft className="w-6 h-6" />
+                      <ChevronLeft className="w-5 h-5" />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-2.5 rounded-full shadow-md ring-1 ring-gray-200 opacity-0 group-hover:opacity-100 transition-all duration-300"
                       aria-label="Next image"
                     >
-                      <ChevronRight className="w-6 h-6" />
+                      <ChevronRight className="w-5 h-5" />
                     </button>
 
                     {/* Image Counter */}
-                    <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
+                    <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
                       {selectedImage + 1} / {product.images.length}
                     </div>
                   </>
@@ -295,21 +308,21 @@ const ProductDetail = () => {
 
               {/* Thumbnail Images */}
               {product.images && product.images.length > 1 && (
-                <div className="grid grid-cols-5 gap-4">
+                <div className="grid grid-cols-5 gap-2 sm:gap-3">
                   {product.images.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`rounded-xl overflow-hidden border-2 transition-all aspect-square ${
                         selectedImage === index
-                          ? "border-gray-800 ring-2 ring-gray-200"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? "border-gray-900 ring-2 ring-gray-900/10"
+                          : "border-gray-200 hover:border-gray-400"
                       }`}
                     >
                       <img
                         src={image}
                         alt={`${product.name} ${index + 1}`}
-                        className="w-full h-20 object-contain bg-gray-50 p-1"
+                        className="w-full h-full object-contain bg-gray-50 p-1"
                         onError={(e) => {
                           e.target.src =
                             "https://via.placeholder.com/100x100?text=No+Image";
@@ -322,45 +335,57 @@ const ProductDetail = () => {
             </div>
 
             {/* Product Info */}
-            <div>
-              <div className="mb-4">
-                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-800 text-sm font-semibold rounded-full uppercase">
+            <div className="flex flex-col">
+              <div className="mb-3">
+                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full uppercase tracking-wide">
                   {product.category || "Produkt"}
                 </span>
               </div>
 
-              <h1 className="text-4xl font-bold text-gray-900 mb-6">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
                 {product.name}
               </h1>
 
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-gray-800">
+              <div className="flex items-baseline flex-wrap gap-3 mb-5 pb-5 border-b border-gray-100">
+                <span className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
                   €{parseFloat(product.price).toFixed(2)}
                 </span>
                 {isAvailable ? (
-                  <span className="ml-4 text-green-600 font-semibold">
-                    <i className="fas fa-box mr-1"></i>
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
+                    <Check className="w-3.5 h-3.5" />
                     Në stok
                   </span>
                 ) : (
-                  <span className="ml-4 text-red-600 font-semibold">
-                    <i className="fas fa-times-circle mr-1"></i>
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-red-700 bg-red-50 px-2.5 py-1 rounded-full">
                     Nuk ka në magazinë
                   </span>
                 )}
               </div>
 
-              <p className="text-gray-700 text-lg mb-6 leading-relaxed">
-                {product.description}
-              </p>
+              {product.description && (
+                <p className="text-gray-600 text-base mb-6 leading-relaxed whitespace-pre-line">
+                  {product.description}
+                </p>
+              )}
 
               {/* Size Selection - only show when enabled for this product */}
               {product.has_sizes && (
                 <div className="mb-6">
-                  <label className="block text-sm font-semibold text-gray-900 mb-3">
-                    Zgjidhni Madhësinë <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-semibold text-gray-900">
+                      Zgjidhni Madhësinë{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    {selectedSize && (
+                      <span className="text-sm text-gray-500">
+                        E zgjedhur:{" "}
+                        <span className="font-semibold text-gray-900">
+                          {selectedSize}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
                     {(product.sizes && product.sizes.length > 0
                       ? product.sizes
                       : fallbackSizes
@@ -378,25 +403,19 @@ const ProductDetail = () => {
                         <button
                           key={sizeValue}
                           onClick={() => setSelectedSize(sizeValue)}
-                          className={`
-                            min-w-[60px] px-4 py-3 border-2 rounded-lg font-semibold transition-all
-                            ${
-                              isSelected
-                                ? "bg-gray-800 text-white border-gray-800 shadow-md scale-105"
-                                : "bg-white text-gray-700 border-gray-300 hover:border-gray-700 hover:shadow-sm"
-                            }
-                          `}
+                          className={`min-w-[56px] h-12 px-4 border-2 rounded-xl font-semibold text-sm transition-all ${
+                            isSelected
+                              ? "bg-gray-900 text-white border-gray-900 shadow-sm"
+                              : "bg-white text-gray-700 border-gray-200 hover:border-gray-900 hover:bg-gray-50"
+                          }`}
                         >
-                          <div className="text-center">
-                            <div className="text-lg">{sizeValue}</div>
-                          </div>
+                          {sizeValue}
                         </button>
                       );
                     })}
                   </div>
                   {!selectedSize && (
-                    <p className="text-sm text-red-600 mt-2">
-                      <i className="fas fa-exclamation-circle mr-1"></i>
+                    <p className="text-xs text-red-600 mt-2">
                       Ju lutem zgjidhni një madhësi
                     </p>
                   )}
@@ -405,50 +424,72 @@ const ProductDetail = () => {
 
               {/* Quantity Selector */}
               <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                <label className="block text-sm font-semibold text-gray-900 mb-3">
                   Sasia
                 </label>
-                <div className="flex items-center space-x-4">
+                <div className="inline-flex items-center bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 rounded-lg border-2 border-gray-300 hover:border-gray-700 flex items-center justify-center font-semibold transition-colors"
+                    className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-40"
+                    disabled={quantity <= 1}
+                    aria-label="Zvogëlo sasinë"
                   >
-                    -
+                    <Minus className="w-4 h-4" />
                   </button>
-                  <span className="text-xl font-semibold w-12 text-center">
+                  <span className="w-12 text-center text-base font-semibold text-gray-900">
                     {quantity}
                   </span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-10 rounded-lg border-2 border-gray-300 hover:border-gray-700 flex items-center justify-center font-semibold transition-colors"
+                    className="w-11 h-11 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-40"
                     disabled={!isAvailable}
+                    aria-label="Rrit sasinë"
                   >
-                    +
+                    <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                {isAvailable && (
-                  <p className="text-sm text-gray-600 mt-2">Në stok</p>
-                )}
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4 mb-8">
+              <div className="flex flex-col sm:flex-row gap-3 mb-6">
                 <button
                   onClick={handleAddToCart}
                   disabled={!isAvailable}
-                  className="flex-1 bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white font-semibold py-3.5 px-6 rounded-xl transition-all shadow-sm hover:shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none"
                 >
-                  <i className="fas fa-shopping-cart mr-2"></i>
+                  <ShoppingCart className="w-5 h-5" />
                   Shto në Shportë
                 </button>
                 <button
                   onClick={handleBuyNow}
                   disabled={!isAvailable}
-                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-900 font-semibold py-3.5 px-6 rounded-xl transition-all disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed"
                 >
-                  <i className="fas fa-bolt mr-2"></i>
+                  <Zap className="w-5 h-5" />
                   Bli Tani
                 </button>
+              </div>
+
+              {/* Perks */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 border-t border-gray-100">
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <Truck className="w-4 h-4 text-gray-700" />
+                  </div>
+                  <span>Dorëzim i shpejtë</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <RotateCcw className="w-4 h-4 text-gray-700" />
+                  </div>
+                  <span>Kthim i lehtë</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <ShieldCheck className="w-4 h-4 text-gray-700" />
+                  </div>
+                  <span>Blerje e sigurt</span>
+                </div>
               </div>
             </div>
           </div>

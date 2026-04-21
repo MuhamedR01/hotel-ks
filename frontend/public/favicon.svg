@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="14" fill="#111827"/>
+  <!-- Clothes hanger -->
+  <path d="M32 16a4 4 0 0 0-4 4c0 1.8 1.2 3.3 2.8 3.8L14 34.5a3 3 0 0 0-1.5 2.6V40a3 3 0 0 0 3 3h33a3 3 0 0 0 3-3v-2.9a3 3 0 0 0-1.5-2.6L33.2 23.8A4 4 0 0 0 36 20a4 4 0 0 0-4-4Zm0 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z" fill="#F9FAFB"/>
+  <!-- Lowercase m below -->
+  <text x="32" y="58" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#F9FAFB">m</text>
+</svg>
