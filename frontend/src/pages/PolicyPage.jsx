@@ -8,7 +8,7 @@ const PolicyPage = () => {
           <h1 className="text-2xl font-bold mb-4">Politika e Privatësisë</h1>
 
           <p className="text-gray-700 mb-4">
-            Ky dokument përshkruan se si <strong>Hotel KS</strong> mbledh,
+            Ky dokument përshkruan se si <strong>minimodaks</strong> mbledh,
             përdor dhe ruan të dhënat tuaja personale. Ne jemi të përkushtuar
             për të respektuar privatësinë tuaj dhe për të siguruar trajtimin e
             sigurt të informacionit tuaj sipas legjislacionit në fuqi.
@@ -114,7 +114,7 @@ const PolicyPage = () => {
             Për pyetje ose kërkesa në lidhje me privatësinë, ju lutemi
             kontaktoni:
           </p>
-          <p className="text-gray-700 font-medium">Email: info@hotel-ks.com</p>
+          <p className="text-gray-700 font-medium">Email: info@minimodaks.com</p>
 
           <h2 className="text-lg font-semibold mt-6 mb-2">
             11. Ndryshimet në politikë

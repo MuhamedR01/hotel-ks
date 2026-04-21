@@ -15,11 +15,11 @@ function Footer() {
             <Link to="/" className="flex items-center space-x-2">
               <img
                 src="/icon.svg"
-                alt="Hotel KS Logo"
+                alt="minimodaks Logo"
                 className="w-10 h-10 transition-transform group-hover:scale-110 duration-200"
               />
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-                Hotel KS
+                minimodaks
               </span>
             </Link>
             <p className="text-gray-400 text-sm">
@@ -152,10 +152,10 @@ function Footer() {
                   />
                 </svg>
                 <a
-                  href="mailto:info@hotel-ks.com"
+                  href="mailto:info@minimodaks.com"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
-                  info@hotel-ks.com
+                  info@minimodaks.com
                 </a>
               </li>
               <li className="flex items-center space-x-3 text-sm">
@@ -187,7 +187,7 @@ function Footer() {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-400 text-sm text-center md:text-left">
-              &copy; {currentYear} Hotel KS. Të gjitha të drejtat e rezervuara.
+              &copy; {currentYear} minimodaks. Të gjitha të drejtat e rezervuara.
             </p>
             <div className="flex space-x-6">
               <a

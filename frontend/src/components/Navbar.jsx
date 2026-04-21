@@ -82,11 +82,11 @@ function Navbar() {
             >
               <img
                 src="/icon.svg"
-                alt="Hotel KS Logo"
+                alt="minimodaks Logo"
                 className="w-10 h-10 transition-transform group-hover:scale-110 duration-200"
               />
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent hidden sm:block">
-                Hotel KS
+                minimodaks
               </span>
             </Link>
           </div>

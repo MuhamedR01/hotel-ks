@@ -12,7 +12,7 @@
                     <i class="fas fa-hotel text-xl"></i>
                 </div>
                 <div>
-                    <h2 class="text-xl font-bold">Hotel KS</h2>
+                    <h2 class="text-xl font-bold">minimodaks</h2>
                     <p class="text-xs text-gray-400">Admin Panel</p>
                 </div>
             </div>
