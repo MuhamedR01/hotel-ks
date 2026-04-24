@@ -15,9 +15,6 @@ return Application::configure(basePath: dirname(__DIR__))
         // Trust all proxies (Coolify reverse proxy terminates SSL)
         $middleware->trustProxies(at: '*');
 
-        // Sanctum stateful middleware for SPA
-        $middleware->statefulApi();
-
         // Force JSON responses for API routes
         $middleware->prependToGroup('api', \App\Http\Middleware\ForceJsonResponse::class);
 

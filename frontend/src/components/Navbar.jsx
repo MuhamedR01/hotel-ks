@@ -59,7 +59,7 @@ function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-24">
+        <div className="flex justify-between items-center h-28">
           {/* Left Side - Mobile Menu & Logo */}
           <div className="flex items-center space-x-3">
             {/* Mobile Menu Button */}
@@ -83,7 +83,8 @@ function Navbar() {
               <img
                 src="/logominimodaks.png"
                 alt="minimodaks"
-                className="h-16 md:h-20 w-auto object-contain transition-transform group-hover:scale-105 duration-200"
+                style={{ width: '200px', height: 'auto' }}
+                className="object-contain transition-transform group-hover:scale-105 duration-200"
               />
             </Link>
           </div>
