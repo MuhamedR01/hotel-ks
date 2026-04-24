@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+/* Image protection: discourage saving / dragging images site-wide.
+   Note: this is a deterrent only — truly preventing image capture is
+   not possible in a browser (screenshots, dev tools, network tab). */
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}

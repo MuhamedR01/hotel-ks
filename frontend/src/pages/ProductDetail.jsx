@@ -25,6 +25,8 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [touchDeltaX, setTouchDeltaX] = useState(0);
 
   // Fallback sizes list (used only if product.sizes is not provided)
   const fallbackSizes = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -175,6 +177,28 @@ const ProductDetail = () => {
     }
   };
 
+  // Touch swipe handlers for mobile image gallery
+  const SWIPE_THRESHOLD = 50; // px
+  const handleTouchStart = (e) => {
+    if (!product?.images || product.images.length <= 1) return;
+    setTouchStartX(e.touches[0].clientX);
+    setTouchDeltaX(0);
+  };
+  const handleTouchMove = (e) => {
+    if (touchStartX === null) return;
+    setTouchDeltaX(e.touches[0].clientX - touchStartX);
+  };
+  const handleTouchEnd = () => {
+    if (touchStartX === null) return;
+    if (touchDeltaX > SWIPE_THRESHOLD) {
+      prevImage();
+    } else if (touchDeltaX < -SWIPE_THRESHOLD) {
+      nextImage();
+    }
+    setTouchStartX(null);
+    setTouchDeltaX(0);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -269,11 +293,26 @@ const ProductDetail = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 p-4 sm:p-6 lg:p-10">
             {/* Images */}
             <div className="lg:sticky lg:top-24 lg:self-start">
-              <div className="mb-4 rounded-2xl overflow-hidden bg-gray-50 relative group aspect-square">
+              <div
+                className="mb-4 rounded-2xl overflow-hidden bg-gray-50 relative group aspect-square touch-pan-y select-none"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
                 <img
                   src={currentImage}
                   alt={product.name}
-                  className="w-full h-full object-contain p-4 sm:p-6 transition-transform duration-300"
+                  draggable="false"
+                  onContextMenu={(e) => e.preventDefault()}
+                  style={{
+                    transform:
+                      touchStartX !== null
+                        ? `translateX(${touchDeltaX * 0.4}px)`
+                        : undefined,
+                    transition:
+                      touchStartX !== null ? "none" : "transform 300ms",
+                  }}
+                  className="w-full h-full object-contain p-4 sm:p-6 pointer-events-none"
                   onError={(e) => {
                     e.target.src =
                       "https://via.placeholder.com/800x600?text=No+Image";
@@ -285,14 +324,14 @@ const ProductDetail = () => {
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-2.5 rounded-full shadow-md ring-1 ring-gray-200 opacity-0 group-hover:opacity-100 transition-all duration-300"
+                      className="hidden sm:block absolute left-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-2.5 rounded-full shadow-md ring-1 ring-gray-200 opacity-0 group-hover:opacity-100 transition-all duration-300"
                       aria-label="Previous image"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-2.5 rounded-full shadow-md ring-1 ring-gray-200 opacity-0 group-hover:opacity-100 transition-all duration-300"
+                      className="hidden sm:block absolute right-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-2.5 rounded-full shadow-md ring-1 ring-gray-200 opacity-0 group-hover:opacity-100 transition-all duration-300"
                       aria-label="Next image"
                     >
                       <ChevronRight className="w-5 h-5" />
@@ -301,6 +340,20 @@ const ProductDetail = () => {
                     {/* Image Counter */}
                     <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
                       {selectedImage + 1} / {product.images.length}
+                    </div>
+
+                    {/* Dot indicators (mobile-friendly) */}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 sm:hidden">
+                      {product.images.map((_, i) => (
+                        <span
+                          key={i}
+                          className={`h-1.5 rounded-full transition-all ${
+                            i === selectedImage
+                              ? "w-5 bg-white"
+                              : "w-1.5 bg-white/50"
+                          }`}
+                        />
+                      ))}
                     </div>
                   </>
                 )}

@@ -11,6 +11,13 @@ function Products() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("default");
+  const [quantities, setQuantities] = useState({});
+
+  const getQty = (id) => quantities[id] ?? 1;
+  const setQty = (id, value) => {
+    const v = Math.max(1, Math.min(99, Number(value) || 1));
+    setQuantities((prev) => ({ ...prev, [id]: v }));
+  };
 
   useEffect(() => {
     const base = import.meta.env.VITE_API_BASE_URL || "/api";
@@ -62,12 +69,13 @@ function Products() {
       return;
     }
 
-    addToCart(product);
+    const qty = getQty(product.id);
+    addToCart({ ...product, quantity: qty });
     // Show toast notification
     const toast = document.createElement("div");
     toast.className =
       "fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50";
-    toast.textContent = `${product.name} u shtua në shportë!`;
+    toast.textContent = `${product.name} × ${qty} u shtua në shportë!`;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
   };
@@ -246,7 +254,9 @@ function Products() {
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                    draggable="false"
+                    onContextMenu={(e) => e.preventDefault()}
+                    className="w-full h-full object-contain p-2 select-none pointer-events-none group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
                       const svg =
                         "%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23ddd%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E";
@@ -276,6 +286,63 @@ function Products() {
                       </span>
                     )}
                   </div>
+
+                  {/* Quantity stepper (only if product is available and has no sizes) */}
+                  {(product.available ?? true) &&
+                    !(
+                      product.has_sizes &&
+                      product.sizes &&
+                      product.sizes.length > 0
+                    ) && (
+                      <div
+                        className="flex items-center justify-center mb-2 sm:mb-3"
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        <div className="inline-flex items-center bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setQty(product.id, getQty(product.id) - 1);
+                            }}
+                            disabled={getQty(product.id) <= 1}
+                            className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            aria-label="Zvogëlo"
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            min="1"
+                            max="99"
+                            value={getQty(product.id)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              setQty(product.id, e.target.value);
+                            }}
+                            className="w-10 sm:w-12 h-8 sm:h-9 text-center text-sm font-semibold bg-transparent border-0 focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setQty(product.id, getQty(product.id) + 1);
+                            }}
+                            className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors"
+                            aria-label="Rrit"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                   <button
                     onClick={(e) => {
                       e.preventDefault();

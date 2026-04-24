@@ -189,12 +189,12 @@ function Footer() {
               rezervuara.
             </p>
             <div className="flex space-x-6">
-              <a
-                href="#"
+              <Link
+                to="/terms"
                 className="text-gray-500 hover:text-gray-900 transition-colors text-sm"
               >
                 Kushtet e Shërbimit
-              </a>
+              </Link>
               <Link
                 to="/policy"
                 className="text-gray-500 hover:text-gray-900 transition-colors text-sm"

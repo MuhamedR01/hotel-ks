@@ -13,6 +13,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Signup from "./pages/Signup";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
+import TermsOfService from "./pages/TermsOfService";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/order-success" element={<OrderSuccess />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/policy" element={<PolicyPage />} />
+                <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/profile" element={<Profile />} />
               </Routes>
             </main>

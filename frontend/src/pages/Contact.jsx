@@ -112,18 +112,23 @@ const Contact = () => {
                   Sa kohë zgjat dërgesa?
                 </h3>
                 <p className="text-gray-600">
-                  Zakonisht, porositë dërgohen brenda 2-5 ditëve pune.
+                  Porositë në Kosovë dërgohen brenda{" "}
+                  <strong>1–3 ditë pune</strong>. Për Shqipëri dhe Maqedoni të
+                  Veriut, afati është <strong>2–5 ditë pune</strong>.
                 </p>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  A mund të kthej produktet?
+                  A mund të kthej ose ndërroj produktet?
                 </h3>
                 <p className="text-gray-600">
-                  Po, ofrojmë politikë kthimi 30-ditore për të gjitha produktet.
-                  Produktet duhet të jenë në gjendje origjinale dhe të
-                  papërdorura.
+                  Po, produktet mund të ndërrohen ose kthehen nëse janë në
+                  gjendje origjinale dhe të papërdorura.{" "}
+                  <strong>
+                    Produktet e brendshme nuk ndërrohen dhe as kthehen
+                  </strong>{" "}
+                  për arsye higjienike.
                 </p>
               </div>
 

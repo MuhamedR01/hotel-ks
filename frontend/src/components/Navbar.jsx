@@ -83,7 +83,7 @@ function Navbar() {
               <img
                 src="/logominimodaks.png"
                 alt="minimodaks"
-                style={{ width: '200px', height: 'auto' }}
+                style={{ width: "200px", height: "auto" }}
                 className="object-contain transition-transform group-hover:scale-105 duration-200"
               />
             </Link>
