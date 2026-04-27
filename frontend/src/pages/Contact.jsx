@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SEO from "../components/SEO";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -29,6 +30,11 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEO
+        title="Kontakt"
+        description="Na kontaktoni për pyetje rreth produkteve, dorëzimit ose porosive. Email: info@minimodaks.com."
+        canonical="https://minimodaks.com/contact"
+      />
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-gray-700 to-gray-900 text-white py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">

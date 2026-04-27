@@ -71,6 +71,22 @@
                 </div>
 
                 <div class="md:col-span-2">
+                    <label for="variant_label" class="block text-sm font-medium text-gray-700 mb-1">Etiketa e variantit (opsionale)</label>
+                    <input type="text" id="variant_label" name="variant_label" value="{{ old('variant_label') }}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        placeholder="p.sh. Madhësia, Marka, Ngjyra">
+                    <p class="text-xs text-gray-500 mt-1">Lëre bosh për “Madhësia”. Vendos “Marka”, “Ngjyra” ose të tjera për ta personalizuar.</p>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="sizes" class="block text-sm font-medium text-gray-700 mb-1">Vlerat e variantit — ndarë me presje</label>
+                    <input type="text" id="sizes" name="sizes" value="{{ old('sizes') }}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        placeholder="p.sh. S, M, L, XL  ose  Mercedes, Audi, BMW">
+                    <p class="text-xs text-gray-500 mt-1">Lëre bosh për produkt pa variante.</p>
+                </div>
+
+                <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Imazhet e Produktit <span class="text-red-500">*</span></label>
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div class="flex-1 w-full">

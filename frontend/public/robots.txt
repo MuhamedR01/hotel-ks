@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Block crawler from non-content / private routes
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order-success
+Disallow: /login
+Disallow: /signup
+Disallow: /profile
+
+Sitemap: https://minimodaks.com/sitemap.xml

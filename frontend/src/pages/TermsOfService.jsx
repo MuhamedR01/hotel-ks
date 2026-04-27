@@ -1,8 +1,14 @@
 import React from "react";
+import SEO from "../components/SEO";
 
 const TermsOfService = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+      <SEO
+        title="Kushtet e Shërbimit"
+        description="Kushtet e përdorimit të minimodaks: porositë, dorëzimi, kthimet, pagesa dhe përgjegjësia."
+        canonical="https://minimodaks.com/terms"
+      />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow p-8 max-w-3xl mx-auto">
           <h1 className="text-2xl font-bold mb-4">Kushtet e Shërbimit</h1>

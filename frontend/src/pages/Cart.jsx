@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
+import SEO from "../components/SEO";
 
 const Cart = () => {
   const PLACEHOLDER_IMAGE =
@@ -140,6 +141,12 @@ const Cart = () => {
   if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
+        <SEO
+          title="Shporta"
+          description="Shporta e blerjeve n\u00eb minimodaks."
+          canonical="https://minimodaks.com/cart"
+          noindex
+        />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto text-center">
             <ShoppingBag className="w-24 h-24 mx-auto text-gray-400 mb-6" />
@@ -163,6 +170,12 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+      <SEO
+        title="Shporta"
+        description="Shporta e blerjeve n\u00eb minimodaks."
+        canonical="https://minimodaks.com/cart"
+        noindex
+      />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -188,7 +201,7 @@ const Cart = () => {
                         Produkti
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Madhësia
+                        Varianti
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         Çmimi
@@ -353,7 +366,7 @@ const Cart = () => {
                           </h3>
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-sm text-gray-600">
-                              Madhësia:
+                              {item.variantLabel || "Madhësia"}:
                             </span>
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-blue-800">
                               {(() => {

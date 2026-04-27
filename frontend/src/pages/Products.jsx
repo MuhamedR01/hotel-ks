@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import SEO from "../components/SEO";
 
 function Products() {
   const { addToCart } = useCart();
@@ -150,6 +151,23 @@ function Products() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+      <SEO
+        title="Veshje për fëmijë — minimodaks"
+        description="Bli online veshje cilësore për fëmijë me çmimet më të mira në treg. Dorëzim në Kosovë 1–3 ditë pune, Shqipëri & Maqedoni 2–5 ditë pune."
+        canonical="https://minimodaks.com/products"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Produktet — minimodaks",
+          url: "https://minimodaks.com/products",
+          inLanguage: "sq",
+          isPartOf: {
+            "@type": "WebSite",
+            name: "minimodaks",
+            url: "https://minimodaks.com",
+          },
+        }}
+      />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">

@@ -61,6 +61,7 @@ class ProductController extends Controller
                 'price'       => (float) $product->price,
                 'available'   => $product->available ? 1 : 0,
                 'has_sizes'   => $product->has_sizes ? 1 : 0,
+                'variant_label' => $product->variant_label,
                 'category'    => $product->category ?? '',
                 'image'       => $imageUrl,
                 'created_at'  => $product->created_at?->toDateTimeString(),
@@ -111,6 +112,7 @@ class ProductController extends Controller
             'updated_at' => $product->updated_at?->toDateTimeString(),
             'has_sizes' => (bool) $product->has_sizes,
             'sizes' => $sizes,
+            'variant_label' => $product->variant_label,
             'images' => $images,
             'image' => $images[0],
             'features' => [

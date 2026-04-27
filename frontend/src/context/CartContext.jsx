@@ -43,6 +43,9 @@ export const CartProvider = ({ children }) => {
               selectedSize: item?.selectedSize
                 ? String(item.selectedSize)
                 : null,
+              variantLabel: item?.variantLabel
+                ? String(item.variantLabel)
+                : null,
               quantity: qtyNum,
             };
           })
@@ -52,7 +55,7 @@ export const CartProvider = ({ children }) => {
               Number.isInteger(it.id) &&
               it.id >= 0 &&
               Number.isFinite(it.price) &&
-              it.quantity >= 1
+              it.quantity >= 1,
           );
 
         return sanitized;
@@ -79,7 +82,7 @@ export const CartProvider = ({ children }) => {
         ) {
           window._cartQuotaWarnShown = true;
           alert(
-            "Kujdes: Ruajtja e shportës në ruajtjen lokale dështoi (kapacitet i tejkaluar). Shporta do të ruhet vetëm gjatë sesionit të tanishëm."
+            "Kujdes: Ruajtja e shportës në ruajtjen lokale dështoi (kapacitet i tejkaluar). Shporta do të ruhet vetëm gjatë sesionit të tanishëm.",
           );
         }
       } catch (err2) {
@@ -128,8 +131,8 @@ export const CartProvider = ({ children }) => {
           typeof product?.image === "string"
             ? product.image
             : Array.isArray(product?.images) && product.images[0]
-            ? product.images[0]
-            : null;
+              ? product.images[0]
+              : null;
         const imageToStore =
           typeof imageVal === "string" && imageVal.startsWith("data:")
             ? null
@@ -144,6 +147,9 @@ export const CartProvider = ({ children }) => {
             ? String(product.description).slice(0, 200)
             : "",
           selectedSize: selectedSize ? String(selectedSize) : null,
+          variantLabel: product.variant_label
+            ? String(product.variant_label)
+            : null,
           quantity: Number(product.quantity) || 1,
         };
         console.log("Adding new item:", {

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useState, useEffect } from "react";
+import SEO from "../components/SEO";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -105,7 +106,11 @@ const ProductDetail = () => {
 
     // Check if product has sizes and none is selected
     if (product.has_sizes && !selectedSize) {
-      alert("Ju lutem zgjidhni një madhësi");
+      alert(
+        product.variant_label
+          ? `Ju lutem zgjidhni ${product.variant_label.toLowerCase()}n`
+          : "Ju lutem zgjidhni një madhësi",
+      );
       return;
     }
 
@@ -119,7 +124,14 @@ const ProductDetail = () => {
       : null;
 
     try {
-      addToCart({ ...product, quantity }, sizeToPass);
+      addToCart(
+        {
+          ...product,
+          quantity,
+          variant_label: product.variant_label || null,
+        },
+        sizeToPass,
+      );
 
       // Show toast notification (safe insertion)
       const toast = document.createElement("div");
@@ -145,7 +157,11 @@ const ProductDetail = () => {
     if (!product) return;
 
     if (product.has_sizes && !selectedSize) {
-      alert("Ju lutem zgjidhni një madhësi");
+      alert(
+        product.variant_label
+          ? `Ju lutem zgjidhni ${product.variant_label.toLowerCase()}n`
+          : "Ju lutem zgjidhni një madhësi",
+      );
       return;
     }
 
@@ -155,7 +171,14 @@ const ProductDetail = () => {
         : null
       : null;
     try {
-      addToCart({ ...product, quantity }, sizeToPass);
+      addToCart(
+        {
+          ...product,
+          quantity,
+          variant_label: product.variant_label || null,
+        },
+        sizeToPass,
+      );
       navigate("/cart");
     } catch (err) {
       console.error("Error during buy now:", err);
@@ -261,8 +284,83 @@ const ProductDetail = () => {
       ? product.images[selectedImage]
       : product.image || "https://via.placeholder.com/800x600?text=No+Image";
 
+  // Build SEO meta + Product JSON-LD
+  const productUrl = `https://minimodaks.com/products/${product.id}`;
+  const ogImage =
+    Array.isArray(product.images) &&
+    product.images[0] &&
+    !product.images[0].startsWith("data:")
+      ? product.images[0]
+      : "https://minimodaks.com/logominimodaks.png";
+  const seoDescription = (
+    product.description ||
+    `${product.name} — bli online te minimodaks me çmim të mirë dhe dorëzim të shpejtët në Kosovë, Shqipëri & Maqedoni.`
+  )
+    .toString()
+    .slice(0, 200);
+  const productLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: seoDescription,
+    image: ogImage,
+    sku: String(product.id),
+    category: product.category || undefined,
+    brand: { "@type": "Brand", name: "minimodaks" },
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      priceCurrency: "EUR",
+      price: Number(product.price).toFixed(2),
+      availability: isAvailable
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+    },
+    aggregateRating:
+      product.rating && product.reviews
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: Number(product.rating).toFixed(1),
+            reviewCount: Number(product.reviews) || 1,
+          }
+        : undefined,
+  };
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Ballina",
+        item: "https://minimodaks.com/",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Produktet",
+        item: "https://minimodaks.com/products",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.name,
+        item: productUrl,
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 sm:py-12">
+      <SEO
+        title={product.name}
+        description={seoDescription}
+        canonical={productUrl}
+        image={ogImage}
+        type="product"
+        jsonLd={[productLd, breadcrumbLd]}
+      />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Breadcrumb */}
         <nav className="mb-6 text-sm">
@@ -426,7 +524,11 @@ const ProductDetail = () => {
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-3">
                     <label className="block text-sm font-semibold text-gray-900">
-                      Zgjidhni Madhësinë <span className="text-red-500">*</span>
+                      Zgjidhni{" "}
+                      {product.variant_label
+                        ? product.variant_label
+                        : "Madhësinë"}{" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     {selectedSize && (
                       <span className="text-sm text-gray-500">

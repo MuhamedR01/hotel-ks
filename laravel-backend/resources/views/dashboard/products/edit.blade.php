@@ -57,11 +57,19 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label for="sizes" class="block text-sm font-medium text-gray-700 mb-1">Madhësitë (ndarë me presje)</label>
+                    <label for="variant_label" class="block text-sm font-medium text-gray-700 mb-1">Etiketa e variantit (opsionale)</label>
+                    <input type="text" id="variant_label" name="variant_label" value="{{ old('variant_label', $product->variant_label) }}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        placeholder="p.sh. Madhësia, Marka, Ngjyra">
+                    <p class="text-xs text-gray-500 mt-1">Si do të quhet zgjedhja në faqen e produktit dhe në shportë. Lëre bosh për “<strong>Madhësia</strong>”.</p>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="sizes" class="block text-sm font-medium text-gray-700 mb-1">Vlerat e variantit (madhësi / marka / ngjyra) — ndarë me presje</label>
                     <input type="text" id="sizes" name="sizes" value="{{ old('sizes', $product->sizes ? implode(', ', $product->sizes) : '') }}"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                        placeholder="S, M, L, XL">
-                    <p class="text-xs text-gray-500 mt-1">Shkruani madhësitë e ndara me presje. Lëre bosh për madhësi standarde (S, M, L, XL).</p>
+                        placeholder="p.sh. S, M, L, XL  ose  Mercedes, Audi, BMW">
+                    <p class="text-xs text-gray-500 mt-1">Shkruani vlerat e ndara me presje. Lëre bosh për produkt pa variante.</p>
                 </div>
 
                 <div class="md:col-span-2">

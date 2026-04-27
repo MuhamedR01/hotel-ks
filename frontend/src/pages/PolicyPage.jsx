@@ -1,8 +1,14 @@
 import React from "react";
+import SEO from "../components/SEO";
 
 const PolicyPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+      <SEO
+        title="Politika e Privatësisë"
+        description="Si i mbledh, përdor dhe ruan minimodaks të dhënat tuaja personale."
+        canonical="https://minimodaks.com/policy"
+      />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow p-8">
           <h1 className="text-2xl font-bold mb-4">Politika e Privatësisë</h1>

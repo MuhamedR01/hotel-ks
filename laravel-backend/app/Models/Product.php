@@ -9,7 +9,7 @@ class Product extends Model
     protected $fillable = [
         'name', 'price', 'description', 'category',
         'available', 'is_active', 'featured', 'rating', 'reviews',
-        'has_sizes', 'sizes',
+        'has_sizes', 'sizes', 'variant_label',
         'image', 'image_name', 'image_size', 'image_type',
         'image_2', 'image_2_name', 'image_2_size', 'image_2_type',
         'image_3', 'image_3_name', 'image_3_size', 'image_3_type',

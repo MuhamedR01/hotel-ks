@@ -65,6 +65,9 @@ class DashboardProductController extends Controller
             'description' => $request->description ?? '',
             'available'   => (bool) $request->available,
             'category'    => $request->input('category', '') ?: null,
+            'variant_label' => $request->filled('variant_label')
+                ? trim($request->input('variant_label'))
+                : null,
         ];
 
         if ($request->hasFile('images')) {
@@ -78,7 +81,18 @@ class DashboardProductController extends Controller
             }
         }
 
-        Product::create($data);
+        $product = Product::create($data);
+
+        // Persist sizes/variant values if provided
+        if ($request->filled('sizes')) {
+            $sizes = array_values(array_filter(array_map('trim', explode(',', $request->sizes))));
+            if (!empty($sizes)) {
+                $product->update([
+                    'sizes' => $sizes,
+                    'has_sizes' => true,
+                ]);
+            }
+        }
 
         return redirect()->route('dashboard.products.index')->with('success', 'added');
     }
@@ -114,6 +128,9 @@ class DashboardProductController extends Controller
             'description' => $request->description ?? '',
             'available'   => (bool) $request->available,
             'category'    => $request->input('category', '') ?: null,
+            'variant_label' => $request->filled('variant_label')
+                ? trim($request->input('variant_label'))
+                : null,
         ];
 
         if ($request->hasFile('images')) {
@@ -131,9 +148,11 @@ class DashboardProductController extends Controller
 
         // Update sizes if provided
         if ($request->filled('sizes')) {
-            $sizes = array_map('trim', explode(',', $request->sizes));
-            $sizes = array_filter($sizes);
-            $product->update(['sizes' => array_values($sizes)]);
+            $sizes = array_values(array_filter(array_map('trim', explode(',', $request->sizes))));
+            $product->update([
+                'sizes' => $sizes,
+                'has_sizes' => !empty($sizes),
+            ]);
         }
 
         return redirect()->route('dashboard.products.index')->with('success', 'updated');
