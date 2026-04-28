@@ -93,7 +93,18 @@
                                     @else
                                         <div class="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center mr-3"><i class="fas fa-image text-gray-500"></i></div>
                                     @endif
-                                    <div class="text-sm font-medium text-gray-900">{{ $item->product_name }}</div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{ $item->product_name }}</div>
+                                        @php
+                                            // Prefer the snapshot saved at order time; fall back to live product note
+                                            $note = $item->admin_note ?: ($item->product->admin_note ?? null);
+                                        @endphp
+                                        @if($note)
+                                            <div class="mt-1 inline-flex items-center px-2 py-0.5 rounded-md bg-amber-100 border border-amber-200 text-amber-800 text-xs font-medium">
+                                                <i class="fas fa-sticky-note mr-1"></i> {{ $note }}
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -115,6 +126,12 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md">
             <div class="flex justify-between"><span class="text-gray-600">Nën Total:</span><span class="font-medium">{{ number_format($order->subtotal, 2, ',', '.') }}€</span></div>
             <div class="flex justify-between"><span class="text-gray-600">Shuma e Transportit:</span><span class="font-medium">{{ number_format($order->shipping_cost, 2, ',', '.') }}€</span></div>
+            @if(!empty($order->promo_code))
+                <div class="flex justify-between text-amber-700">
+                    <span class="flex items-center"><i class="fas fa-ticket-alt mr-1"></i>Kodi: <span class="font-mono ml-1">{{ $order->promo_code }}</span></span>
+                    <span class="font-medium">−{{ number_format($order->discount_amount ?? 0, 2, ',', '.') }}€</span>
+                </div>
+            @endif
             <div class="flex justify-between"><span class="text-gray-600">Totali:</span><span class="font-bold text-lg">{{ number_format($order->total_amount, 2, ',', '.') }}€</span></div>
         </div>
     </div>

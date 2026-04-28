@@ -5,6 +5,8 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\DashboardCustomerController;
 use App\Http\Controllers\Dashboard\DashboardOrderController;
 use App\Http\Controllers\Dashboard\DashboardProductController;
+use App\Http\Controllers\Dashboard\DashboardPromoCodeController;
+use App\Http\Controllers\Dashboard\DashboardSaleController;
 use App\Http\Controllers\Dashboard\DashboardSettingsController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +51,20 @@ Route::prefix($dashboardPrefix)->name('dashboard.')->group(function () {
             Route::post('/products/delete/{id}', [DashboardProductController::class, 'destroy'])->name('products.destroy');
             Route::post('/products/toggle-availability/{id}', [DashboardProductController::class, 'toggleAvailability'])->name('products.toggleAvailability');
             Route::post('/products/toggle-sizes/{id}', [DashboardProductController::class, 'toggleSizes'])->name('products.toggleSizes');
+
+            // Sales / discounts
+            Route::get('/sales', [DashboardSaleController::class, 'index'])->name('sales.index');
+            Route::post('/sales/bulk-update', [DashboardSaleController::class, 'bulkUpdate'])->name('sales.bulkUpdate');
+            Route::post('/sales/bulk-apply', [DashboardSaleController::class, 'bulkApply'])->name('sales.bulkApply');
+
+            // Promo codes
+            Route::get('/promo-codes', [DashboardPromoCodeController::class, 'index'])->name('promo-codes.index');
+            Route::get('/promo-codes/create', [DashboardPromoCodeController::class, 'create'])->name('promo-codes.create');
+            Route::post('/promo-codes', [DashboardPromoCodeController::class, 'store'])->name('promo-codes.store');
+            Route::get('/promo-codes/{id}/edit', [DashboardPromoCodeController::class, 'edit'])->name('promo-codes.edit');
+            Route::post('/promo-codes/{id}', [DashboardPromoCodeController::class, 'update'])->name('promo-codes.update');
+            Route::post('/promo-codes/{id}/delete', [DashboardPromoCodeController::class, 'destroy'])->name('promo-codes.destroy');
+            Route::post('/promo-codes/{id}/toggle', [DashboardPromoCodeController::class, 'toggle'])->name('promo-codes.toggle');
         });
 
         // Orders — all roles

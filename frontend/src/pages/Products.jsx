@@ -286,6 +286,11 @@ function Products() {
                       Mbaruar
                     </div>
                   )}
+                  {Number(product.sale_percent) > 0 && (
+                    <div className="absolute top-2 right-2 bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow">
+                      -{Math.round(Number(product.sale_percent))}%
+                    </div>
+                  )}
                 </div>
                 <div className="p-3 sm:p-5">
                   <h3 className="text-sm sm:text-lg font-semibold text-gray-900 mb-2 group-hover:text-gray-800 transition-colors line-clamp-2">
@@ -295,9 +300,20 @@ function Products() {
                     {product.description}
                   </p>
                   <div className="flex items-center justify-between mb-2 sm:mb-3">
-                    <span className="text-lg sm:text-2xl font-bold text-gray-800">
-                      €{Number(product.price).toFixed(2)}
-                    </span>
+                    {Number(product.sale_percent) > 0 ? (
+                      <div className="flex flex-col">
+                        <span className="text-xs sm:text-sm line-through text-gray-400">
+                          €{Number(product.price).toFixed(2)}
+                        </span>
+                        <span className="text-lg sm:text-2xl font-bold text-amber-600">
+                          €{Number(product.sale_price ?? product.price).toFixed(2)}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-lg sm:text-2xl font-bold text-gray-800">
+                        €{Number(product.price).toFixed(2)}
+                      </span>
+                    )}
                     {(product.available ?? true) && (
                       <span className="text-xs sm:text-sm text-green-600 font-medium">
                         Në stok

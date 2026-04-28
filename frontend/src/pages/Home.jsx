@@ -255,15 +255,27 @@ function Home() {
                     <div className="absolute top-4 right-4 bg-gray-800 text-white px-3 py-1 rounded-full text-sm font-semibold">
                       Këshilluar
                     </div>
+                    {Number(product.sale_percent) > 0 && (
+                      <div className="absolute top-4 left-4 bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow">
+                        -{Math.round(Number(product.sale_percent))}%
+                      </div>
+                    )}
                   </div>
                   <div className="p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-gray-800 transition-colors">
                       {product.name}
                     </h3>
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-gray-800">
-                        {product.price}€
-                      </span>
+                      {Number(product.sale_percent) > 0 ? (
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-sm line-through text-gray-400">{Number(product.price).toFixed(2)}€</span>
+                          <span className="text-2xl font-bold text-amber-600">{Number(product.sale_price ?? product.price).toFixed(2)}€</span>
+                        </div>
+                      ) : (
+                        <span className="text-2xl font-bold text-gray-800">
+                          {product.price}€
+                        </span>
+                      )}
                       <button
                         onClick={(e) => handleAddToCart(product, e)}
                         className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors text-sm font-semibold"

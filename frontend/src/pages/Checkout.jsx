@@ -23,6 +23,7 @@ function Checkout() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState(null);
 
   // Auto-fill form with user profile data if logged in
   useEffect(() => {
@@ -106,9 +107,25 @@ function Checkout() {
   // Calculate totals
   const subtotal =
     cart?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
-  const shipping = calculateShipping(formData.country, subtotal);
+  const baseShipping = calculateShipping(formData.country, subtotal);
+  const freeShipping = appliedPromo?.discount_type === "free_shipping";
+  const shipping = freeShipping ? 0 : baseShipping;
+  const discount = Number(appliedPromo?.discount_amount) || 0;
   const tax = 0;
-  const total = subtotal + shipping;
+  const total = Math.max(0, subtotal + shipping - discount);
+
+  // Restore applied promo from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("appliedPromo");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.code) setAppliedPromo(parsed);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, type, value, checked } = e.target;
@@ -181,9 +198,10 @@ function Checkout() {
         subtotal: subtotal,
         shipping_cost: shipping,
         tax: 0,
-        total_amount: subtotal + shipping,
+        total_amount: total,
         payment_method: "cash",
         notes: formData.notes || "",
+        promo_code: appliedPromo?.code || null,
         items: cart.map((item) => ({
           product_id: Number(item.id),
           product_name: item.name || "",
@@ -240,8 +258,9 @@ function Checkout() {
         // Store cart items before clearing
         const cartItems = [...cart];
 
-        // Clear cart
+        // Clear cart and applied promo
         clearCart();
+        sessionStorage.removeItem("appliedPromo");
 
         // Navigate to success page with order data
         navigate("/order-success", {
@@ -565,9 +584,30 @@ function Checkout() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Dërgesa:</span>
                     <span className="text-gray-900">
-                      {shipping.toFixed(2)}€
+                      {freeShipping ? (
+                        <>
+                          <span className="line-through text-gray-400 mr-1">
+                            {baseShipping.toFixed(2)}€
+                          </span>
+                          <span className="text-green-700 font-medium">FALAS</span>
+                        </>
+                      ) : (
+                        `${shipping.toFixed(2)}€`
+                      )}
                     </span>
                   </div>
+                  {appliedPromo && discount > 0 && (
+                    <div className="flex justify-between text-amber-700">
+                      <span>Kodi: <span className="font-mono">{appliedPromo.code}</span></span>
+                      <span>-{discount.toFixed(2)}€</span>
+                    </div>
+                  )}
+                  {appliedPromo && freeShipping && (
+                    <div className="flex justify-between text-amber-700 text-sm">
+                      <span>Kodi:</span>
+                      <span className="font-mono">{appliedPromo.code}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t border-gray-200">
                     <span>Totali:</span>
                     <span>{total.toFixed(2)}€</span>

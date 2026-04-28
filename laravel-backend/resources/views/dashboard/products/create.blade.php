@@ -78,6 +78,27 @@
                     <p class="text-xs text-gray-500 mt-1">Lëre bosh për “Madhësia”. Vendos “Marka”, “Ngjyra” ose të tjera për ta personalizuar.</p>
                 </div>
 
+                <div>
+                    <label for="sale_percent" class="block text-sm font-medium text-amber-700 mb-1">
+                        <i class="fas fa-percent mr-1"></i> Zbritja (%)
+                    </label>
+                    <input type="number" step="0.01" min="0" max="99" id="sale_percent" name="sale_percent"
+                        value="{{ old('sale_percent') }}"
+                        class="w-full px-3 py-2 border border-amber-300 bg-amber-50 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        placeholder="0">
+                    <p class="text-xs text-gray-500 mt-1">Lëre bosh ose 0 për asnjë zbritje.</p>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="admin_note" class="block text-sm font-medium text-amber-700 mb-1">
+                        <i class="fas fa-lock mr-1"></i> Shënim i brendshëm (vetëm për adminë)
+                    </label>
+                    <input type="text" id="admin_note" name="admin_note" value="{{ old('admin_note') }}"
+                        class="w-full px-3 py-2 border border-amber-300 bg-amber-50 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        placeholder="p.sh. Ngjyrë e kuqe / Variant 2 / Lloji A”">
+                    <p class="text-xs text-gray-500 mt-1">Shënim i brendshëm i dukshm vetëm në dashboard — NUK shfaqet në faqen publike. Përdoreni për të dalluar produktet e ngjashme (p.sh. ngjyra) gjatë paketimit të porosive.</p>
+                </div>
+
                 <div class="md:col-span-2">
                     <label for="sizes" class="block text-sm font-medium text-gray-700 mb-1">Vlerat e variantit — ndarë me presje</label>
                     <input type="text" id="sizes" name="sizes" value="{{ old('sizes') }}"

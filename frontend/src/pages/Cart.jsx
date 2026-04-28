@@ -15,6 +15,8 @@ const Cart = () => {
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [promoError, setPromoError] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState(null);
+  const [promoLoading, setPromoLoading] = useState(false);
 
   const subtotal = getCartTotal();
 
@@ -53,11 +55,63 @@ const Cart = () => {
   const { user } = useAuth();
   const userCountry = user?.country || "";
   const hasShipping = !!user && userCountry.toString().trim() !== "";
-  const shipping = hasShipping
+  const baseShipping = hasShipping
     ? calculateShipping(userCountry, subtotal)
     : null;
+  const freeShipping = appliedPromo?.discount_type === "free_shipping";
+  const shipping = freeShipping && baseShipping !== null ? 0 : baseShipping;
   const tax = 0;
   const total = subtotal + (shipping || 0) - discount;
+
+  // Restore previously applied promo from sessionStorage
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("appliedPromo");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.code) {
+        setAppliedPromo(parsed);
+        setPromoCode(parsed.code);
+        setDiscount(Number(parsed.discount_amount) || 0);
+      }
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Re-validate the saved promo whenever subtotal changes (cart edits)
+  useEffect(() => {
+    if (!appliedPromo) return;
+    const base = import.meta.env.VITE_API_BASE_URL || "/api";
+    fetch(`${base}/promo-codes/validate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: appliedPromo.code, subtotal }),
+    })
+      .then((r) => r.json().then((d) => ({ ok: r.ok, d })))
+      .then(({ ok, d }) => {
+        if (!ok || !d.success) {
+          setAppliedPromo(null);
+          setDiscount(0);
+          sessionStorage.removeItem("appliedPromo");
+          return;
+        }
+        const updated = {
+          code: d.code,
+          discount_type: d.discount_type,
+          discount_value: d.discount_value,
+          discount_amount: Number(d.discount_amount) || 0,
+        };
+        setAppliedPromo(updated);
+        setDiscount(updated.discount_amount);
+        sessionStorage.setItem("appliedPromo", JSON.stringify(updated));
+      })
+      .catch(() => {
+        /* keep existing */
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subtotal]);
 
   const handleQuantityChange = (itemId, newQuantity, selectedSize) => {
     if (newQuantity < 1) return;
@@ -80,22 +134,51 @@ const Cart = () => {
     }
   };
 
-  const handleApplyPromo = () => {
+  const handleApplyPromo = async () => {
     setPromoError("");
-    // Mock promo codes
-    const promoCodes = {
-      SAVE10: 10,
-      SAVE20: 20,
-      WELCOME: 15,
-    };
-
-    if (promoCodes[promoCode.toUpperCase()]) {
-      setDiscount(promoCodes[promoCode.toUpperCase()]);
-      setPromoError("");
-    } else if (promoCode) {
-      setPromoError("Kodi promocional i pavlefshëm");
-      setDiscount(0);
+    const code = promoCode.trim().toUpperCase();
+    if (!code) {
+      setPromoError("Vendosni kodin promocional.");
+      return;
     }
+    setPromoLoading(true);
+    try {
+      const base = import.meta.env.VITE_API_BASE_URL || "/api";
+      const res = await fetch(`${base}/promo-codes/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, subtotal }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        setPromoError(data.message || "Kodi promocional i pavlefshëm.");
+        setDiscount(0);
+        setAppliedPromo(null);
+        sessionStorage.removeItem("appliedPromo");
+        return;
+      }
+      const promo = {
+        code: data.code,
+        discount_type: data.discount_type,
+        discount_value: data.discount_value,
+        discount_amount: Number(data.discount_amount) || 0,
+      };
+      setAppliedPromo(promo);
+      setDiscount(promo.discount_amount);
+      sessionStorage.setItem("appliedPromo", JSON.stringify(promo));
+    } catch {
+      setPromoError("Dështim në komunikim me serverin.");
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setDiscount(0);
+    setPromoCode("");
+    setPromoError("");
+    sessionStorage.removeItem("appliedPromo");
   };
 
   const handleCheckout = () => {
@@ -481,21 +564,36 @@ const Cart = () => {
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
                     placeholder="Vendosni kodin"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                    disabled={!!appliedPromo}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent disabled:bg-gray-100"
                   />
-                  <button
-                    onClick={handleApplyPromo}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
-                  >
-                    Apliko
-                  </button>
+                  {appliedPromo ? (
+                    <button
+                      type="button"
+                      onClick={handleRemovePromo}
+                      className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-semibold"
+                    >
+                      Hiq
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleApplyPromo}
+                      disabled={promoLoading}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold disabled:opacity-50"
+                    >
+                      {promoLoading ? "..." : "Apliko"}
+                    </button>
+                  )}
                 </div>
                 {promoError && (
                   <p className="text-red-600 text-sm mt-1">{promoError}</p>
                 )}
-                {discount > 0 && (
+                {appliedPromo && (
                   <p className="text-green-600 text-sm mt-1">
-                    Kodi promocional u aplikua! -€{discount.toFixed(2)}
+                    {appliedPromo.discount_type === "free_shipping"
+                      ? `Kodi "${appliedPromo.code}" — transport falas!`
+                      : `Kodi "${appliedPromo.code}" u aplikua! -€${Number(appliedPromo.discount_amount).toFixed(2)}`}
                   </p>
                 )}
               </div>

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\PromoCodeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -33,6 +34,9 @@ Route::get('/get_product', function (\Illuminate\Http\Request $request) {
 // Orders (public — guests can place orders)
 Route::post('/orders', [OrderController::class, 'store']);
 Route::post('/create_order', [OrderController::class, 'store']); // legacy alias
+
+// Promo codes (public — validate before checkout)
+Route::post('/promo-codes/validate', [PromoCodeController::class, 'validateCode']);
 
 // Authenticated routes (Sanctum token)
 Route::middleware('auth:sanctum')->group(function () {

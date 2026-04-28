@@ -35,6 +35,14 @@
                 <i class="fas fa-box text-lg"></i>
                 <span class="font-medium">Produktet</span>
             </a>
+            <a href="{{ route('dashboard.sales.index') }}" class="sidebar-link {{ str_starts_with($currentRoute, 'dashboard.sales') ? 'active' : '' }} flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors">
+                <i class="fas fa-percent text-lg"></i>
+                <span class="font-medium">Zbritjet</span>
+            </a>
+            <a href="{{ route('dashboard.promo-codes.index') }}" class="sidebar-link {{ str_starts_with($currentRoute, 'dashboard.promo-codes') ? 'active' : '' }} flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors">
+                <i class="fas fa-ticket-alt text-lg"></i>
+                <span class="font-medium">Kodet promocionale</span>
+            </a>
             @endif
 
             <a href="{{ route('dashboard.orders.index') }}" class="sidebar-link {{ str_starts_with($currentRoute, 'dashboard.orders') ? 'active' : '' }} flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors">

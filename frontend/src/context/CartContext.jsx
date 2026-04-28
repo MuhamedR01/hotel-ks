@@ -141,7 +141,16 @@ export const CartProvider = ({ children }) => {
         const newItem = {
           id: prodId,
           name: product.name || "",
-          price: parseFloat(product.price) || 0,
+          price:
+            parseFloat(
+              product.sale_price !== undefined &&
+                product.sale_price !== null &&
+                Number(product.sale_percent) > 0
+                ? product.sale_price
+                : product.price,
+            ) || 0,
+          originalPrice: parseFloat(product.price) || 0,
+          salePercent: parseFloat(product.sale_percent) || 0,
           image: imageToStore,
           description: product.description
             ? String(product.description).slice(0, 200)

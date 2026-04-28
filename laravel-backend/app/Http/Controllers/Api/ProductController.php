@@ -41,7 +41,11 @@ class ProductController extends Controller
             $query->where('category', $category);
         }
 
-        $query->orderByDesc('created_at');
+        // Sale items first, then a freshly randomized order each request so
+        // shoppers don't always see the same products at the top.
+        // (COALESCE keeps NULL sale_percent at the bottom of the on-sale tier.)
+        $query->orderByRaw('COALESCE(sale_percent, 0) DESC')
+              ->inRandomOrder();
 
         if ($limit) {
             $query->limit($limit);
@@ -54,11 +58,19 @@ class ProductController extends Controller
                 $imageUrl = 'data:image/svg+xml,' . $svg;
             }
 
+            $salePercent = (float) ($product->sale_percent ?? 0);
+            $salePrice   = $salePercent > 0
+                ? round((float) $product->price * (1 - $salePercent / 100), 2)
+                : (float) $product->price;
+
             return [
                 'id'          => (int) $product->id,
                 'name'        => $product->name,
                 'description' => $product->description,
                 'price'       => (float) $product->price,
+                'sale_percent' => $salePercent,
+                'sale_price'  => $salePrice,
+                'on_sale'     => $salePercent > 0,
                 'available'   => $product->available ? 1 : 0,
                 'has_sizes'   => $product->has_sizes ? 1 : 0,
                 'variant_label' => $product->variant_label,
@@ -102,6 +114,9 @@ class ProductController extends Controller
             'name' => $product->name,
             'description' => $product->description,
             'price' => (float) $product->price,
+            'sale_percent' => (float) ($product->sale_percent ?? 0),
+            'sale_price'   => $product->sale_price,
+            'on_sale'      => $product->is_on_sale,
             'available' => (bool) $product->available,
             'category' => $product->category ?? '',
             'is_active' => (bool) $product->is_active,

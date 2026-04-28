@@ -12,6 +12,7 @@ class Order extends Model
         'customer_address', 'customer_city', 'customer_country',
         'shipping_postal_code',
         'subtotal', 'shipping_cost', 'tax', 'total_amount',
+        'promo_code', 'discount_amount',
         'status', 'payment_method', 'payment_status', 'notes',
     ];
 
@@ -22,6 +23,7 @@ class Order extends Model
             'shipping_cost' => 'decimal:2',
             'tax' => 'decimal:2',
             'total_amount' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
         ];
     }
 

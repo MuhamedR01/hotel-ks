@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\PromoCode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -36,10 +38,30 @@ class OrderController extends Controller
             ], 400);
         }
 
-        // Compute subtotal server-side to prevent tampering
+        // Compute subtotal server-side from current product prices (sale-aware)
+        // — never trust client-supplied prices.
         $subtotal = 0;
+        $serverItems = [];
         foreach ($request->items as $item) {
-            $subtotal += floatval($item['price']) * intval($item['quantity']);
+            $productId = (int) ($item['product_id'] ?? 0);
+            $quantity  = max(1, intval($item['quantity'] ?? 1));
+            $product   = $productId ? Product::find($productId) : null;
+
+            // Use current sale price if a sale is active, else regular price.
+            // Fall back to client price as last resort (e.g. deleted product).
+            $unitPrice = $product
+                ? (float) $product->sale_price
+                : (float) ($item['price'] ?? 0);
+
+            $subtotal += $unitPrice * $quantity;
+            $serverItems[] = [
+                'product'   => $product,
+                'product_id' => $productId,
+                'product_name' => $item['product_name'] ?? ($product->name ?? ''),
+                'quantity'  => $quantity,
+                'unit_price' => $unitPrice,
+                'selected_size' => $item['selected_size'] ?? null,
+            ];
         }
 
         // Determine shipping by country
@@ -55,7 +77,28 @@ class OrderController extends Controller
         }
 
         $tax = 0.0;
-        $totalAmount = $subtotal + $shippingCost;
+
+        // ---- Apply promo code (server-side validation) ----
+        $rawPromoInput = trim((string) $request->input('promo_code', ''));
+        $promoCodeStored = null;
+        $discountAmount = 0.0;
+        $promoModel = null;
+        if ($rawPromoInput !== '') {
+            $promoModel = PromoCode::where('code', strtoupper($rawPromoInput))->first();
+            if ($promoModel && $promoModel->isUsable($subtotal)) {
+                if ($promoModel->discount_type === 'percent') {
+                    $discountAmount = round($subtotal * ((float) $promoModel->discount_value / 100), 2);
+                } elseif ($promoModel->discount_type === 'fixed') {
+                    $discountAmount = min((float) $promoModel->discount_value, $subtotal);
+                } elseif ($promoModel->discount_type === 'free_shipping') {
+                    $shippingCost = 0.0;
+                }
+                $promoCodeStored = $promoModel->code;
+            }
+            // Silently ignore invalid promo codes — frontend already validated.
+        }
+
+        $totalAmount = max(0, $subtotal + $shippingCost - $discountAmount);
 
         try {
             DB::beginTransaction();
@@ -73,25 +116,38 @@ class OrderController extends Controller
                 'shipping_cost' => $shippingCost,
                 'tax' => $tax,
                 'total_amount' => $totalAmount,
+                'promo_code' => $promoCodeStored,
+                'discount_amount' => $discountAmount,
                 'payment_method' => $request->input('payment_method', 'cash'),
                 'payment_status' => 'pending',
                 'notes' => $request->input('notes', ''),
                 'status' => 'processing',
             ]);
 
-            foreach ($request->items as $item) {
-                $productPrice = floatval($item['price']);
-                $quantity = intval($item['quantity']);
+            foreach ($serverItems as $line) {
+                $product = $line['product'];
+
+                // Snapshot the admin_note from the product so it remains
+                // visible on the order even if the product is later edited.
+                $adminNote = $product && !empty($product->admin_note)
+                    ? $product->admin_note
+                    : null;
 
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'product_id' => $item['product_id'],
-                    'product_name' => $item['product_name'] ?? '',
-                    'product_price' => $productPrice,
-                    'quantity' => $quantity,
-                    'subtotal' => $productPrice * $quantity,
-                    'size' => $item['selected_size'] ?? null,
+                    'product_id' => $line['product_id'],
+                    'product_name' => $line['product_name'],
+                    'product_price' => $line['unit_price'],
+                    'quantity' => $line['quantity'],
+                    'subtotal' => $line['unit_price'] * $line['quantity'],
+                    'size' => $line['selected_size'],
+                    'admin_note' => $adminNote,
                 ]);
+            }
+
+            // Increment usage counter only after the order is committed below.
+            if ($promoModel) {
+                $promoModel->increment('times_used');
             }
 
             DB::commit();
@@ -101,6 +157,11 @@ class OrderController extends Controller
                 'message' => 'Order created successfully',
                 'order_id' => $order->id,
                 'order_number' => $order->order_number,
+                'subtotal' => $subtotal,
+                'shipping_cost' => $shippingCost,
+                'discount_amount' => $discountAmount,
+                'promo_code' => $promoCodeStored,
+                'total_amount' => $totalAmount,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

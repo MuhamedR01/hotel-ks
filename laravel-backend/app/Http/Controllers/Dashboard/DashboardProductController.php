@@ -53,20 +53,26 @@ class DashboardProductController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0.01',
+            'sale_percent' => 'nullable|numeric|min:0|max:99',
             'description' => 'nullable|string',
             'available' => 'required|in:0,1',
             'images' => 'required|array|max:5',
             'images.*' => 'image|mimes:jpg,jpeg,png,gif,webp|max:5120',
         ]);
 
+        $salePct = $request->filled('sale_percent') ? (float) $request->input('sale_percent') : 0;
         $data = [
             'name'        => $request->name,
             'price'       => $request->price,
+            'sale_percent' => $salePct > 0 ? $salePct : null,
             'description' => $request->description ?? '',
             'available'   => (bool) $request->available,
             'category'    => $request->input('category', '') ?: null,
             'variant_label' => $request->filled('variant_label')
                 ? trim($request->input('variant_label'))
+                : null,
+            'admin_note'  => $request->filled('admin_note')
+                ? trim($request->input('admin_note'))
                 : null,
         ];
 
@@ -116,20 +122,26 @@ class DashboardProductController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0.01',
+            'sale_percent' => 'nullable|numeric|min:0|max:99',
             'description' => 'nullable|string',
             'available' => 'required|in:0,1',
             'images' => 'nullable|array|max:5',
             'images.*' => 'image|mimes:jpg,jpeg,png,gif,webp|max:5120',
         ]);
 
+        $salePct = $request->filled('sale_percent') ? (float) $request->input('sale_percent') : 0;
         $data = [
             'name'        => $request->name,
             'price'       => $request->price,
+            'sale_percent' => $salePct > 0 ? $salePct : null,
             'description' => $request->description ?? '',
             'available'   => (bool) $request->available,
             'category'    => $request->input('category', '') ?: null,
             'variant_label' => $request->filled('variant_label')
                 ? trim($request->input('variant_label'))
+                : null,
+            'admin_note'  => $request->filled('admin_note')
+                ? trim($request->input('admin_note'))
                 : null,
         ];
 

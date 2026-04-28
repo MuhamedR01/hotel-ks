@@ -498,9 +498,23 @@ const ProductDetail = () => {
               </h1>
 
               <div className="flex items-baseline flex-wrap gap-3 mb-5 pb-5 border-b border-gray-100">
-                <span className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
-                  €{parseFloat(product.price).toFixed(2)}
-                </span>
+                {Number(product.sale_percent) > 0 ? (
+                  <>
+                    <span className="text-3xl sm:text-4xl font-bold text-amber-600 tracking-tight">
+                      €{parseFloat(product.sale_price ?? product.price).toFixed(2)}
+                    </span>
+                    <span className="text-xl text-gray-400 line-through">
+                      €{parseFloat(product.price).toFixed(2)}
+                    </span>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                      -{Math.round(Number(product.sale_percent))}%
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+                    €{parseFloat(product.price).toFixed(2)}
+                  </span>
+                )}
                 {isAvailable ? (
                   <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
                     <Check className="w-3.5 h-3.5" />

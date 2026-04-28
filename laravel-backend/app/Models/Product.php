@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $fillable = [
-        'name', 'price', 'description', 'category',
+        'name', 'price', 'sale_percent', 'description', 'category',
         'available', 'is_active', 'featured', 'rating', 'reviews',
-        'has_sizes', 'sizes', 'variant_label',
+        'has_sizes', 'sizes', 'variant_label', 'admin_note',
         'image', 'image_name', 'image_size', 'image_type',
         'image_2', 'image_2_name', 'image_2_size', 'image_2_type',
         'image_3', 'image_3_name', 'image_3_size', 'image_3_type',
@@ -21,6 +21,7 @@ class Product extends Model
     {
         return [
             'price' => 'decimal:2',
+            'sale_percent' => 'decimal:2',
             'available' => 'boolean',
             'is_active' => 'boolean',
             'featured' => 'boolean',
@@ -28,6 +29,23 @@ class Product extends Model
             'sizes' => 'array',
             'rating' => 'decimal:1',
         ];
+    }
+
+    /**
+     * Effective price after sale_percent is applied. If no sale, equals price.
+     */
+    public function getSalePriceAttribute(): float
+    {
+        $pct = (float) ($this->sale_percent ?? 0);
+        if ($pct <= 0) {
+            return (float) $this->price;
+        }
+        return round((float) $this->price * (1 - $pct / 100), 2);
+    }
+
+    public function getIsOnSaleAttribute(): bool
+    {
+        return ((float) ($this->sale_percent ?? 0)) > 0;
     }
 
     public function orderItems()

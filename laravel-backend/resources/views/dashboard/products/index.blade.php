@@ -80,7 +80,14 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                <span class="text-sm font-semibold text-gray-900">{{ number_format($product->price, 2) }}€</span>
+                                @if($product->sale_percent && $product->sale_percent > 0)
+                                    @php $sp = round($product->price * (1 - $product->sale_percent/100), 2); @endphp
+                                    <span class="text-sm line-through text-gray-400">{{ number_format($product->price, 2) }}€</span>
+                                    <span class="text-sm font-semibold text-amber-700 ml-1">{{ number_format($sp, 2) }}€</span>
+                                    <span class="inline-block ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">-{{ rtrim(rtrim(number_format($product->sale_percent, 2, '.', ''), '0'), '.') }}%</span>
+                                @else
+                                    <span class="text-sm font-semibold text-gray-900">{{ number_format($product->price, 2) }}€</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 <form method="POST" action="{{ route('dashboard.products.toggleAvailability', $product->id) }}" class="inline-block">
