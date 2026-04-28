@@ -18,8 +18,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Public routes
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
+});
 
 // Products (public read)
 Route::get('/products', [ProductController::class, 'index']);
@@ -31,12 +33,16 @@ Route::get('/get_product', function (\Illuminate\Http\Request $request) {
     return app(ProductController::class)->show($request->integer('id'));
 });
 
-// Orders (public — guests can place orders)
-Route::post('/orders', [OrderController::class, 'store']);
-Route::post('/create_order', [OrderController::class, 'store']); // legacy alias
+// Orders (public — guests can place orders) — throttled to prevent abuse
+Route::middleware('throttle:5,1')->group(function () {
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::post('/create_order', [OrderController::class, 'store']); // legacy alias
+});
 
-// Promo codes (public — validate before checkout)
-Route::post('/promo-codes/validate', [PromoCodeController::class, 'validateCode']);
+// Promo codes (public — validate before checkout) — throttled to prevent brute force
+Route::middleware('throttle:30,1')->group(function () {
+    Route::post('/promo-codes/validate', [PromoCodeController::class, 'validateCode']);
+});
 
 // Authenticated routes (Sanctum token)
 Route::middleware('auth:sanctum')->group(function () {

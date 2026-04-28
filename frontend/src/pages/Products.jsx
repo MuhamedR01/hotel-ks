@@ -272,6 +272,8 @@ function Products() {
                   <img
                     src={product.image}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
                     draggable="false"
                     onContextMenu={(e) => e.preventDefault()}
                     className="w-full h-full object-contain p-2 select-none pointer-events-none group-hover:scale-105 transition-transform duration-300"
@@ -306,7 +308,10 @@ function Products() {
                           €{Number(product.price).toFixed(2)}
                         </span>
                         <span className="text-lg sm:text-2xl font-bold text-amber-600">
-                          €{Number(product.sale_price ?? product.price).toFixed(2)}
+                          €
+                          {Number(product.sale_price ?? product.price).toFixed(
+                            2,
+                          )}
                         </span>
                       </div>
                     ) : (

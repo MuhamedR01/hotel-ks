@@ -211,22 +211,18 @@ function Checkout() {
         })),
       };
 
-      console.log("Sending order data:", orderData);
-
       // Client-side validation of items to avoid backend rejection
-      const invalidItems = orderData.items.filter(
+      const invalidItemsCheck = orderData.items.filter(
         (it) =>
           !it.product_id || !Number.isFinite(it.price) || it.quantity <= 0,
       );
-      if (invalidItems.length > 0) {
-        console.error("Invalid items detected before sending:", invalidItems);
-        // Build a helpful error message listing problematic items (name and id)
-        const details = invalidItems
+      if (invalidItemsCheck.length > 0) {
+        const details = invalidItemsCheck
           .map(
             (it) => `${it.product_name || "(no name)"} (id: ${it.product_id})`,
           )
           .join(", ");
-        const msg = `Some items in your cart are missing required information (id, price, or quantity): ${details}. Please review your cart.`;
+        const msg = `Disa produkte në shportë nuk kanë informacion të plotë (${details}). Ju lutem kërkoni në shportën tuaj.`;
         setError(msg);
         throw new Error(msg);
       }
@@ -252,7 +248,6 @@ function Checkout() {
       }
 
       const data = await response.json();
-      console.log("Order response:", data);
 
       if (data.success) {
         // Store cart items before clearing
@@ -589,7 +584,9 @@ function Checkout() {
                           <span className="line-through text-gray-400 mr-1">
                             {baseShipping.toFixed(2)}€
                           </span>
-                          <span className="text-green-700 font-medium">FALAS</span>
+                          <span className="text-green-700 font-medium">
+                            FALAS
+                          </span>
                         </>
                       ) : (
                         `${shipping.toFixed(2)}€`
@@ -598,7 +595,10 @@ function Checkout() {
                   </div>
                   {appliedPromo && discount > 0 && (
                     <div className="flex justify-between text-amber-700">
-                      <span>Kodi: <span className="font-mono">{appliedPromo.code}</span></span>
+                      <span>
+                        Kodi:{" "}
+                        <span className="font-mono">{appliedPromo.code}</span>
+                      </span>
                       <span>-{discount.toFixed(2)}€</span>
                     </div>
                   )}

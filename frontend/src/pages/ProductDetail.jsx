@@ -114,8 +114,6 @@ const ProductDetail = () => {
       return;
     }
 
-    console.log("Adding to cart with size:", selectedSize);
-
     // Pass the size to addToCart - it will be null if product doesn't have sizes
     const sizeToPass = product.has_sizes
       ? selectedSize
@@ -501,7 +499,10 @@ const ProductDetail = () => {
                 {Number(product.sale_percent) > 0 ? (
                   <>
                     <span className="text-3xl sm:text-4xl font-bold text-amber-600 tracking-tight">
-                      €{parseFloat(product.sale_price ?? product.price).toFixed(2)}
+                      €
+                      {parseFloat(product.sale_price ?? product.price).toFixed(
+                        2,
+                      )}
                     </span>
                     <span className="text-xl text-gray-400 line-through">
                       €{parseFloat(product.price).toFixed(2)}

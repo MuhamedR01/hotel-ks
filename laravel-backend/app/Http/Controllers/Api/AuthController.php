@@ -65,7 +65,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:8',
             'name' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
@@ -76,7 +76,7 @@ class AuthController extends Controller
             'email.email' => 'Email nuk është i vlefshëm',
             'email.unique' => 'Ky email është tashmë i regjistruar',
             'password.required' => 'Email dhe fjalëkalimi janë të detyrueshëm',
-            'password.min' => 'Fjalëkalimi duhet të ketë të paktën 6 karaktere',
+            'password.min' => 'Fjalëkalimi duhet të ketë të paktën 8 karaktere',
         ]);
 
         if ($validator->fails()) {

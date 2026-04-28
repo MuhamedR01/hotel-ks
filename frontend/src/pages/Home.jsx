@@ -250,6 +250,8 @@ function Home() {
                     <img
                       src={product.image}
                       alt={product.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute top-4 right-4 bg-gray-800 text-white px-3 py-1 rounded-full text-sm font-semibold">
@@ -268,8 +270,15 @@ function Home() {
                     <div className="flex items-center justify-between">
                       {Number(product.sale_percent) > 0 ? (
                         <div className="flex items-baseline gap-2">
-                          <span className="text-sm line-through text-gray-400">{Number(product.price).toFixed(2)}€</span>
-                          <span className="text-2xl font-bold text-amber-600">{Number(product.sale_price ?? product.price).toFixed(2)}€</span>
+                          <span className="text-sm line-through text-gray-400">
+                            {Number(product.price).toFixed(2)}€
+                          </span>
+                          <span className="text-2xl font-bold text-amber-600">
+                            {Number(
+                              product.sale_price ?? product.price,
+                            ).toFixed(2)}
+                            €
+                          </span>
                         </div>
                       ) : (
                         <span className="text-2xl font-bold text-gray-800">

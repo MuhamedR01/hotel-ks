@@ -92,8 +92,6 @@ export const CartProvider = ({ children }) => {
   }, [cart]);
 
   const addToCart = (product, selectedSize = null) => {
-    console.log("Adding to cart:", { id: product?.id, selectedSize }); // Debug log (sanitized)
-
     const prodId = Number(product?.id);
     if (!Number.isInteger(prodId) || prodId < 0) {
       console.error("addToCart called with invalid product id:", product);
@@ -123,7 +121,6 @@ export const CartProvider = ({ children }) => {
             updatedCart[existingItemIndex].quantity +
             (Number(product.quantity) || 1),
         };
-        console.log("Updated existing item:", updatedCart[existingItemIndex]); // Debug log
         return updatedCart;
       } else {
         // Item doesn't exist, add new item — sanitize stored data to avoid large blobs
@@ -161,10 +158,6 @@ export const CartProvider = ({ children }) => {
             : null,
           quantity: Number(product.quantity) || 1,
         };
-        console.log("Adding new item:", {
-          id: newItem.id,
-          selectedSize: newItem.selectedSize,
-        });
         return [...prevCart, newItem];
       }
     });

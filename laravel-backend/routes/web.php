@@ -33,7 +33,7 @@ if ($dashboardPrefix !== '') {
 // Dashboard auth routes
 Route::prefix($dashboardPrefix)->name('dashboard.')->group(function () {
     Route::get('/login', [DashboardAuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [DashboardAuthController::class, 'login'])->name('login.submit');
+    Route::post('/login', [DashboardAuthController::class, 'login'])->middleware('throttle:10,1')->name('login.submit');
     Route::post('/logout', [DashboardAuthController::class, 'logout'])->name('logout');
 
     // Protected dashboard routes
@@ -56,6 +56,8 @@ Route::prefix($dashboardPrefix)->name('dashboard.')->group(function () {
             Route::get('/sales', [DashboardSaleController::class, 'index'])->name('sales.index');
             Route::post('/sales/bulk-update', [DashboardSaleController::class, 'bulkUpdate'])->name('sales.bulkUpdate');
             Route::post('/sales/bulk-apply', [DashboardSaleController::class, 'bulkApply'])->name('sales.bulkApply');
+            Route::post('/sales/{id}', [DashboardSaleController::class, 'updateOne'])->name('sales.updateOne')->where('id', '[0-9]+');
+            Route::post('/sales/{id}/remove', [DashboardSaleController::class, 'removeOne'])->name('sales.removeOne')->where('id', '[0-9]+');
 
             // Promo codes
             Route::get('/promo-codes', [DashboardPromoCodeController::class, 'index'])->name('promo-codes.index');

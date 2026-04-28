@@ -50,8 +50,7 @@
     </form>
 
     {{-- Per-product table with inline editor --}}
-    <form method="POST" action="{{ route('dashboard.sales.bulkUpdate') }}" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        @csrf
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="hidden md:block overflow-x-auto">
             <table class="w-full">
                 <thead class="bg-gray-50 border-b border-gray-200">
@@ -64,6 +63,7 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Çmimi</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase w-32">Zbritja %</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Çmimi pas zbritjes</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase w-44">Veprime</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -71,6 +71,7 @@
                         @php
                             $pct = (float) ($product->sale_percent ?? 0);
                             $finalPrice = $pct > 0 ? round((float) $product->price * (1 - $pct / 100), 2) : (float) $product->price;
+                            $rowPctValue = $pct > 0 ? rtrim(rtrim(number_format($pct, 2, '.', ''), '0'), '.') : '';
                         @endphp
                         <tr class="hover:bg-gray-50 {{ $pct > 0 ? 'bg-amber-50/40' : '' }}">
                             <td class="px-4 py-3">
@@ -88,8 +89,9 @@
                             <td class="px-4 py-3">
                                 <div class="relative">
                                     <input type="number" step="0.01" min="0" max="99"
-                                        name="sales[{{ $product->id }}]"
-                                        value="{{ $pct > 0 ? rtrim(rtrim(number_format($pct, 2, '.', ''), '0'), '.') : '' }}"
+                                        form="row-form-{{ $product->id }}"
+                                        name="sale_percent"
+                                        value="{{ $rowPctValue }}"
                                         placeholder="0"
                                         class="w-24 px-3 py-1.5 pr-7 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-amber-400">
                                     <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">%</span>
@@ -103,9 +105,27 @@
                                     —
                                 @endif
                             </td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center justify-end gap-2">
+                                    <form method="POST" action="{{ route('dashboard.sales.updateOne', $product->id) }}" id="row-form-{{ $product->id }}" class="inline">
+                                        @csrf
+                                        <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-xs font-semibold">
+                                            <i class="fas fa-save mr-1"></i>Ruaj
+                                        </button>
+                                    </form>
+                                    @if($pct > 0)
+                                        <form method="POST" action="{{ route('dashboard.sales.removeOne', $product->id) }}" class="inline" onsubmit="return confirm('Hiq zbritjen për këtë produkt?');">
+                                            @csrf
+                                            <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-xs font-semibold" title="Hiq zbritjen">
+                                                <i class="fas fa-times mr-1"></i>Hiq
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500"><i class="fas fa-tags text-3xl mb-2"></i><p>Nuk u gjet asnjë produkt.</p></td></tr>
+                        <tr><td colspan="7" class="px-6 py-8 text-center text-gray-500"><i class="fas fa-tags text-3xl mb-2"></i><p>Nuk u gjet asnjë produkt.</p></td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -114,7 +134,10 @@
         {{-- Mobile fallback --}}
         <div class="md:hidden divide-y divide-gray-200">
             @forelse($products as $product)
-                @php $pct = (float) ($product->sale_percent ?? 0); @endphp
+                @php
+                    $pct = (float) ($product->sale_percent ?? 0);
+                    $rowPctValue = $pct > 0 ? rtrim(rtrim(number_format($pct, 2, '.', ''), '0'), '.') : '';
+                @endphp
                 <div class="p-4 {{ $pct > 0 ? 'bg-amber-50/40' : '' }}">
                     <div class="flex items-start gap-2">
                         <input type="checkbox" form="bulkApplyForm" name="product_ids[]" value="{{ $product->id }}" class="row-check rounded mt-1">
@@ -123,11 +146,22 @@
                             <div class="text-xs text-gray-500">{{ number_format($product->price, 2) }}€</div>
                             <div class="mt-2 flex items-center gap-2">
                                 <input type="number" step="0.01" min="0" max="99"
-                                    name="sales[{{ $product->id }}]"
-                                    value="{{ $pct > 0 ? rtrim(rtrim(number_format($pct, 2, '.', ''), '0'), '.') : '' }}"
+                                    form="row-form-m-{{ $product->id }}"
+                                    name="sale_percent"
+                                    value="{{ $rowPctValue }}"
                                     placeholder="0"
                                     class="w-20 px-2 py-1 border border-gray-300 rounded text-sm">
                                 <span class="text-xs text-gray-500">%</span>
+                                <form method="POST" action="{{ route('dashboard.sales.updateOne', $product->id) }}" id="row-form-m-{{ $product->id }}" class="inline">
+                                    @csrf
+                                    <button type="submit" class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-semibold">Ruaj</button>
+                                </form>
+                                @if($pct > 0)
+                                    <form method="POST" action="{{ route('dashboard.sales.removeOne', $product->id) }}" class="inline" onsubmit="return confirm('Hiq?');">
+                                        @csrf
+                                        <button type="submit" class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs font-semibold">Hiq</button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -137,13 +171,10 @@
             @endforelse
         </div>
 
-        <div class="bg-gray-50 border-t border-gray-200 px-4 py-3 flex items-center justify-between">
-            <p class="text-xs text-gray-500">Lëre bosh ose vendos <strong>0</strong> për të hequr zbritjen.</p>
-            <button type="submit" class="bg-gray-900 hover:bg-black text-white px-5 py-2 rounded-lg font-medium text-sm">
-                <i class="fas fa-save mr-1"></i>Ruaj zbritjet
-            </button>
+        <div class="bg-gray-50 border-t border-gray-200 px-4 py-3">
+            <p class="text-xs text-gray-500">Vendos % për secilin produkt dhe shtyp <strong>Ruaj</strong>. Vendos 0 ose shtyp <strong>Hiq</strong> për ta hequr zbritjen.</p>
         </div>
-    </form>
+    </div>
 
     @if($products->hasPages())
         <div class="mt-6">{{ $products->appends(request()->query())->links() }}</div>

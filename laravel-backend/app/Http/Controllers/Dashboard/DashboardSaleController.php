@@ -55,6 +55,39 @@ class DashboardSaleController extends Controller
     }
 
     /**
+     * Update or remove the sale on a single product (per-row Save / Remove buttons).
+     */
+    public function updateOne(Request $request, int $id)
+    {
+        $request->validate([
+            'sale_percent' => 'nullable|numeric|min:0|max:99',
+        ]);
+
+        $product = Product::findOrFail($id);
+        $raw = $request->input('sale_percent');
+        $pct = ($raw === null || $raw === '') ? null : (float) $raw;
+        if ($pct !== null && $pct <= 0) $pct = null;
+        $product->update(['sale_percent' => $pct]);
+
+        $msg = $pct
+            ? "Zbritja {$pct}% u ruajt për \"{$product->name}\"."
+            : "Zbritja u hoq nga \"{$product->name}\".";
+
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Remove the sale on a single product.
+     */
+    public function removeOne(int $id)
+    {
+        $product = Product::findOrFail($id);
+        $product->update(['sale_percent' => null]);
+
+        return back()->with('success', "Zbritja u hoq nga \"{$product->name}\".");
+    }
+
+    /**
      * Apply the same sale_percent to every selected product (checkboxes).
      */
     public function bulkApply(Request $request)
